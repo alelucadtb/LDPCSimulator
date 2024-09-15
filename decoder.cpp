@@ -83,14 +83,14 @@ std::vector<double> Decoder::calculateGFunction(int d, int l){
 
 std::vector<std::vector<int>> Decoder::generatePermutation(){
     int bit = log2(pam.getM()) - 1;
+    int num_options = pam.getM() / 2;
     std::vector<std::vector<int>> possible_permutation;
     std::vector<int> bit_permutation;
     std::string binary;
-    for(int i = 0; i < bit; i++){
+    for(int i = 0; i < num_options; i++){
         binary = std::bitset<8>(i).to_string(); //to binary
-        for (char& c : binary) {
-            /*Convert the char into int*/
-            bit_permutation.push_back(c - '0');
+        for(int k = binary.length() - bit; k < binary.length(); k++){
+            bit_permutation.push_back(binary[k] - '0');
         }
         possible_permutation.push_back(bit_permutation);
         bit_permutation.clear();
@@ -115,6 +115,12 @@ std::vector<int> Decoder::fastDecodingCycle(){
     std::vector<int> exponent_map_temp (log2(pam.getM())-1, 0);
     //Create an array of possible permutation of M-1 bits
     std::vector<std::vector<int>> possible_permutation = generatePermutation();
+    for(int i = 0; i < possible_permutation.size(); i++){
+        for(int j = 0; j < possible_permutation[i].size(); j++){
+            std::cout << possible_permutation[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
     int bit_per_symbol = log2(pam.getM());
     //Generate the vector_map
     /* Select the position of the fixed bit in the vector_map */
@@ -146,8 +152,6 @@ std::vector<int> Decoder::fastDecodingCycle(){
                     vector_map_1.push_back(vector_map_temp);
                     exponent_map_1.push_back(exponent_map_temp);
                 }
-                vector_map_temp.clear();
-                exponent_map_temp.clear();
             }
             
         }
