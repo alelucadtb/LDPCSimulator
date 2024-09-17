@@ -52,10 +52,8 @@ void Graph::generateGraph()
 double Graph::phi_tilde(double x) {
     // Calculate e^x
     double exp_x = std::exp(x);
-    
     // Calculate the fraction (e^x + 1) / (e^x - 1)
     double fraction = (exp_x + 1) / (exp_x - 1);
-    
     // Calculate the natural logarithm of the fraction
     return std::log(fraction);
 }
@@ -63,7 +61,7 @@ double Graph::phi_tilde(double x) {
 std::vector<int> Graph::messagePassing(std::vector<double> receivedFromChannel, double variance){
     /*Messages that leave the equality nodes*/
     std::vector<double> vectorEqualityNodes(equalityNodesSize);
-    /*Messages that leave the g nodes, coming from th channel*/
+    /*Messages that leave the g nodes, coming from the channel*/
     std::vector<double> vectorgNodes(equalityNodesSize);
     double LLR_g;
     bool codeword = false;
@@ -158,7 +156,7 @@ std::vector<int> Graph::messagePassing(std::vector<double> receivedFromChannel, 
             }
             vectorEqualityNodes[i] = sum;
         }
-
+    
         /*Marginalization*/
         for(int i = 0; i < vectorEqualityNodes.size(); i++){
             if(vectorEqualityNodes[i] + vectorgNodes[i] > 0){
@@ -170,7 +168,6 @@ std::vector<int> Graph::messagePassing(std::vector<double> receivedFromChannel, 
         if(matrix.isCodewordVector(decodedBits)){
             codeword = true;
         }
-        counter++;
         if(counter > 100){
             break;
         }

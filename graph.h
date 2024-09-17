@@ -8,29 +8,33 @@
 
 // Class representing a graph
 class Graph {
-private:
-    /*Vector of vectors of pair vectors that represents the message sent from the equality nodes to the check nodes*/ 
-    std::vector<std::vector<std::pair<int, double>>> adjListCheckNodes;
-    /*Vector of vectors of pair vectors that represents the message sent from the check nodes to the equality nodes */ 
-    std::vector<std::vector<std::pair<int, double>>> adjListEqualityNodes;
-    ParityCheckMatrix& matrix;
-    /*Number of check nodes*/
-    int checkNodesSize;
-    /*Number of equality nodes*/
-    int equalityNodesSize;
+    
+public:
+    
     /*Function to calculate the phi_tilde function*/
     double phi_tilde(double x);
     /*Function to calculate the sign of a number*/
     int sign(double x);
 
-public:
     // Constructor to initialize the graph
     // Parameters: vertices - number of vertices in the
     // graph
     //  directed - flag to indicate if the graph is directed
     //  (default is false)
     Graph(ParityCheckMatrix& pcm);
-
+    
+    /*Vector of vectors of pair vectors that represents the message sent from the equality nodes to the check nodes*/ 
+    std::vector<std::vector<std::pair<int, double>>> adjListCheckNodes;
+    /*Vector of vectors of pair vectors that represents the message sent from the check nodes to the equality nodes */ 
+    std::vector<std::vector<std::pair<int, double>>> adjListEqualityNodes;
+    /*Vector of vectors of pair vectors that represents the message sent from the w nodes to the equality nodes*/ 
+    std::vector<std::vector<std::pair<int, double>>> adjListWNodes;
+    
+    ParityCheckMatrix& matrix;
+    /*Number of check nodes*/
+    int checkNodesSize;
+    /*Number of equality nodes*/
+    int equalityNodesSize;
     /*Get the number of equality nodes*/
     int getEqualityNodesSize();
 
