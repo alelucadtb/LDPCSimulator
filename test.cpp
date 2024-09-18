@@ -38,7 +38,7 @@ int main() {
     }
     
     /*AWGN Channel*/
-    AWGN awgn = AWGN(0.0, 0.25, modulated_word.size());
+    AWGN awgn = AWGN(0.0, 0.01, modulated_word.size());
     Channel channel = Channel(awgn);
     std::vector<double> received_word = channel.AWGNChannel(modulated_word);
     
@@ -48,11 +48,11 @@ int main() {
     /*Execute the message passing algorithm*/
     //std::vector<int> decoded_word = graph.messagePassing(received_word, 0.25);
     /*Print the decoded word*/
-    Decoder decoder = Decoder(received_word, graph, 0.25, modulated_word, modulated_pam);
+    Decoder decoder = Decoder(received_word, graph, 0.01, modulated_word, modulated_pam);
     std::vector<int> decoded_word_2 = decoder.fastDecodingCycle();
     std::cout << encoded_word << std::endl;
     for(int i = 0; i < decoded_word_2.size(); i++){
-        std::cout << decoded_word_2[i] << " ";
+        std::cout << decoded_word_2[i];
     }
     std::cout << std::endl;
     return 0;

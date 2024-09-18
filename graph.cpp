@@ -17,12 +17,10 @@ int Graph::getEqualityNodesSize(){
 }
 
 int Graph::sign(double x) {
-    if (x > 0) {
+    if (x >= 0) {
         return 1;  // Positive
-    } else if (x < 0) {
-        return -1; // Negative
     } else {
-        return 0;  // Zero
+        return -1; // Negative
     }
 }
 
@@ -53,7 +51,7 @@ double Graph::phi_tilde(double x) {
     // Calculate e^x
     double exp_x = std::exp(x);
     // Calculate the fraction (e^x + 1) / (e^x - 1)
-    double fraction = (exp_x + 1) / (exp_x - 1);
+    double fraction = (exp_x + 1.0) / (exp_x - 1.0);
     // Calculate the natural logarithm of the fraction
     return std::log(fraction);
 }
