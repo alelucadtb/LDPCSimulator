@@ -56,6 +56,130 @@ double Graph::phi_tilde(double x) {
     return std::log(fraction);
 }
 
+void Graph::printGraph(){
+    for(int i = 0; i < adjListCheckNodes.size(); i++){
+        for(int j = 0; j < adjListCheckNodes[i].size(); j++){
+            std::cout << "adjListCheckNodes[" << i << "][" << j << "].first: " << adjListCheckNodes[i][j].first << std::endl;
+            std::cout << "adjListCheckNodes[" << i << "][" << j << "].second: " << adjListCheckNodes[i][j].second << std::endl;
+        }
+    }
+    for(int i = 0; i < adjListEqualityNodes.size(); i++){
+        for(int j = 0; j < adjListEqualityNodes[i].size(); j++){
+            std::cout << "adjListEqualityNodes[" << i << "][" << j << "].first: " << adjListEqualityNodes[i][j].first << std::endl;
+            std::cout << "adjListEqualityNodes[" << i << "][" << j << "].second: " << adjListEqualityNodes[i][j].second << std::endl;
+        }
+    }
+}
+
+std::vector<int> Graph::upperMessagePassing(std::vector<double> LLRValues){
+    /*Messages that leave the equality nodes*/
+    std::vector<double> vectorEqualityNodes(equalityNodesSize);
+    bool codeword = false;
+    int counter = 0;
+    std::vector<int> decodedBits(equalityNodesSize);
+
+    while(!codeword){
+        /*Messages that leave the equality nodes*/
+        for(int i = 0; i < adjListEqualityNodes.size(); i++)
+        {
+            /*Check all the links connected to the current equality node*/
+            for(int j = 0; j < adjListEqualityNodes[i].size(); ++j)
+            {   
+                /*Get the destination of the current link, so the check node*/
+                int dest = adjListEqualityNodes[i][j].first;
+                /*Sum of the messages coming from the check nodes*/
+                int sum = LLRValues[i];
+                /*Check all the links connected to the current equality node*/
+                for(int j_first = 0; j_first < adjListEqualityNodes[i].size(); j_first++){
+                    /*If the current link is the same as the one we are checking, skip it*/
+                    if(j_first == j){
+                         continue;
+                    }
+                    int dest_first = adjListEqualityNodes[i][j_first].first;
+                    /*Check all the links connected to the current check node*/
+                    for(int j_second = 0; j_second < adjListCheckNodes[dest_first].size(); j_second++){
+                        /*If destination of the current check nodes is the current equality node, add the message to the sum*/
+                        if(adjListCheckNodes[dest_first][j_second].first == i){
+                            sum += adjListCheckNodes[dest_first][j_second].second;
+                            break;
+                        }
+                    }
+                }
+                /*Set the message to the current equality node*/
+                adjListEqualityNodes[i][j].second = sum;
+            }
+        }
+
+        /*Messages that leave the check nodes*/
+        for(int i = 0; i < adjListCheckNodes.size(); i++)
+        {
+            /*Check all the links connected to the current check node*/
+            for(int j = 0; j < adjListCheckNodes[i].size(); j++)
+            {
+                /*Get the destination, so the equality node*/
+                int dest = adjListCheckNodes[i][j].first;
+                /*Sum of the messages coming from the equality nodes except the destination*/
+                double sum_of_LLR = 0;
+                double product_sign = 1;
+                for(int j_first = 0; j_first < adjListCheckNodes[i].size(); j_first++)
+                {
+                    if(j_first == j)
+                    {
+                        continue;
+                    }
+                    /*Get the destination, so the equality node*/
+                    int dest_first = adjListCheckNodes[i][j_first].first;
+                    for(int j_second = 0; j_second < adjListEqualityNodes[dest_first].size(); j_second++)
+                    {
+                        if(adjListEqualityNodes[dest_first][j_second].first == i)
+                        {
+                            sum_of_LLR += phi_tilde(std::fabs(adjListEqualityNodes[dest_first][j_second].second));
+                            product_sign *= sign(adjListEqualityNodes[dest_first][j_second].second);
+                            break;
+                        }
+                    }
+                }
+                /*Set the message to the current check node*/
+                adjListCheckNodes[i][j].second = product_sign * phi_tilde(sum_of_LLR);
+            }
+        }
+
+        /*Sum of the messages that enter in the equality nodes*/
+        for(int i = 0; i < adjListEqualityNodes.size(); i++){
+            double sum = 0;
+            for(int j = 0; j < adjListEqualityNodes[i].size(); j++){
+                /*Get the destination, so the check node*/
+                int dest = adjListEqualityNodes[i][j].first;
+                /*Sum of the messages coming from the check nodes*/
+                for(int j_first = 0; j_first < adjListCheckNodes[dest].size(); j_first++){
+                    if(adjListCheckNodes[dest][j_first].first == i){
+                        sum += adjListCheckNodes[dest][j_first].second;
+                        break;
+                    }
+                }      
+            }
+            vectorEqualityNodes[i] = sum;
+        }
+    
+        /*Marginalization*/
+        for(int i = 0; i < vectorEqualityNodes.size(); i++){
+            if(vectorEqualityNodes[i] + LLRValues[i] > 0){
+                decodedBits[i] = 0;
+            }else{
+                decodedBits[i] = 1;
+            }
+        }
+        if(matrix.isCodewordVector(decodedBits)){
+            codeword = true;
+        }
+        if(counter > 100){
+            break;
+        }
+    }
+    //std::cout << "adjListEqualityNodes size: " << adjListEqualityNodes.size() << std::endl;
+    return decodedBits;
+}
+
 std::vector<int> Graph::messagePassing(std::vector<double> receivedFromChannel, double variance){
     /*Messages that leave the equality nodes*/
     std::vector<double> vectorEqualityNodes(equalityNodesSize);

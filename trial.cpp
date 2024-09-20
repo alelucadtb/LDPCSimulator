@@ -219,3 +219,142 @@ std::vector<int> Decoder::fastDecodingCycle(){
     return decodedBits;
 
 }
+
+std::vector<int> Decoder::testingMethod(double variance){
+    /*Messages that leave the g nodes, coming from the channel*/
+    std::vector<double> equalityNodesValues(equalityNodesSize);
+    int counter = 0;
+    std::vector<int> decodedBits(equalityNodesSize);
+    std::vector<int> output_link;
+    std::vector<std::vector<int>> vector_map_0;
+    std::vector<std::vector<int>> vector_map_1;
+    std::vector<std::vector<int>> exponent_map_0;
+    std::vector<std::vector<int>> exponent_map_1;
+    int bit_per_symbol = log2(pam.getM());
+    //Generate the graph in the object of the class Decoder
+    generateGraph();
+
+    //Create a temporary vector_map element
+    std::vector<int> vector_map_temp (bit_per_symbol, 0);
+    std::vector<int> exponent_map_temp (bit_per_symbol-1, 0);
+    
+    /*Create an array of possible permutation of M-1 bits*/
+    std::vector<std::vector<int>> possible_permutation = generatePermutation();
+    for(int i = 0; i < bit_per_symbol; i++){
+        /* Select the value of the fixed bit in the vector_map */
+        for(int i_first = 0; i_first < 2; i_first++){
+            vector_map_temp[i] = i_first;
+            for(int j = 0; j < possible_permutation.size(); j++){
+                int k = 0;
+                for(int j_first = 0; j_first < possible_permutation[j].size(); j_first++){
+                    /* Flip the bit */
+                    exponent_map_temp[j_first] = !possible_permutation[j][j_first];
+                    //exponent_map_temp[j_first] = possible_permutation[j][j_first]? 1 : -1;
+                    if(k == i){
+                        k++;
+                    }
+                    vector_map_temp[k] =  possible_permutation[j][j_first];
+                    k++;
+                }
+                if(i_first == 0){
+                    vector_map_0.push_back(vector_map_temp);
+                    exponent_map_0.push_back(exponent_map_temp);
+                    output_link.push_back(i);
+                }
+                else{
+                    vector_map_1.push_back(vector_map_temp);
+                    exponent_map_1.push_back(exponent_map_temp);
+                }
+            }
+        }
+    }
+
+    //graph.printGraph();
+    double LLR_g;
+    bool codeword = false;
+    double sum_1 = 0;
+    double sum = 0;
+    /* Vector that contains the sum of the messages that enter in the equality nodes*/
+    std::vector<double> vectorEqualityNodes(graph.equalityNodesSize);
+   
+    double num_1;
+    double den_1;
+    double num_2;
+    double den_2;
+    double num_3;
+    double den_3;
+    double num_4;
+    double den_4;
+    
+    int out = output_link[0];
+    std::vector<std::pair<double, double>> temp_vector;
+    for(int i = 0; i < received_word.size(); i++){
+        double num = 0;
+        double den = 0;
+        //Select one of the possibile combinations of vector_map
+        for(int j = 0; j < vector_map_0.size(); j++){
+            //Select one of the possibile combinations of exponent_map
+            std::vector<double> LLRwNodes = calculateLLRwNodes(output_link[j], i);
+            //for(int s = 0; s < LLRwNodes.size(); s++){
+                //std::cout << "LLRwNodes["<<s<<"]: " << LLRwNodes[s] << std::endl;
+            //}
+            //std::cout << LLRwNodes.size() << std::endl;
+            num_1 = calculateGFunction(mapGrayNumber(vector_map_0[j]), i);
+            den_1 = calculateGFunction(mapGrayNumber(vector_map_1[j]), i);
+            num_2 = den_2 = 0.0;
+            for(int k = 0; k < exponent_map_0[j].size(); k++){
+                num_2 += ((double)exponent_map_0[j][k]) * LLRwNodes[k];
+                den_2 += ((double)exponent_map_1[j][k]) * LLRwNodes[k];  
+            }
+            num_3 = exp(num_2);
+            den_3 = exp(den_2);
+
+            if(out != output_link[j]){
+                temp_vector.push_back(std::make_pair(num, den));
+                out = output_link[j];
+                num = num_1 * num_3;
+                den = den_1 * den_3;
+                std::cout << "a" << std::endl;
+            } else{
+                num += num_1 * num_3;
+                den += den_1 * den_3;
+                std::cout << "b" << std::endl;
+            }
+        }
+        temp_vector.push_back(std::make_pair(num, den));
+        out = output_link[0];
+        //std::cout << "temp_vector.size(): " << temp_vector.size() << std::endl;
+        /*Calculate the LLR for the w-nodes*/
+        for(int j = 0; j < temp_vector.size(); j++){
+            double LLR_temp = temp_vector[j].first/temp_vector[j].second;
+            //std::cout << "LLR_temp: " << LLR_temp << std::endl;
+            adjListWNodes[i][j].second = log(LLR_temp);
+            std::cout << "adjListWNodes["<<i<<"]["<<j<<"]: " << adjListWNodes[i][j].second << std::endl;
+        }
+        //std::cout << "adjListWNodes[i].size(): " << adjListWNodes[i].size() << std::endl;
+        temp_vector.clear();  
+    }
+
+    equalityNodesValues = equalityTesting(adjListWNodes);
+
+    //for(int i = 0; i < equalityNodesValues.size(); i++){
+        //std::cout << "equalityNodesValues["<<i<<"]: " << equalityNodesValues[i] << std::endl;
+    //}
+
+    //std::cout << "equalityNodesValues size: " << equalityNodesValues.size() << std::endl;
+
+    graph.generateGraph();
+    return graph.upperMessagePassing(equalityNodesValues);
+}
+
+std::vector<double> Decoder::equalityTesting(std::vector<std::vector<std::pair<int, double>>> adjListWNode){
+    std::vector<double> results;
+    int z = 0;
+    for(int i = 0; i < adjListWNode.size(); i++){
+        for(int j = 0; j < adjListWNode[i].size(); j++){
+            results.push_back(adjListWNode[i][j].second);
+            z++;
+        }
+    }
+    return results;
+}

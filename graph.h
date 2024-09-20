@@ -46,8 +46,13 @@ public:
     /*Generate the graph from the parity check matrix*/
     void generateGraph();
 
+    /*Print the graph*/
+    void printGraph(); 
+
     /*Execute the message passing algorithm on the graph*/
     std::vector<int> messagePassing(std::vector<double> receivedFromChannel, double variance);
+
+    std::vector<int> upperMessagePassing(std::vector<double> LLRValues);
 };
 
 #endif

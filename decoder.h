@@ -20,8 +20,15 @@ class Decoder{
         ~Decoder();
 
         /*Decode the received word*/
-        std::vector<int> fastDecodingCycle();
-    
+        std::vector<int> BICMDecodingCycle(int fast_decoding_cycle); 
+        /*Print the graph*/
+        void printGraph();
+
+        /*Method for debugging*/
+        std::vector<int> testingMethod(double variance);
+
+        std::vector<double> equalityTesting(std::vector<std::vector<std::pair<int, double>>> adjListWNode);
+
     private:
         /*The received word from the channel (r_l)*/
         std::vector<double> received_word;
@@ -63,6 +70,7 @@ class Decoder{
         std::vector<std::vector<int>> generatePermutation();
         /*Flip a bit*/
         int flipBit(int bit);
+       
 };
 
 #endif

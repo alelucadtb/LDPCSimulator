@@ -1,5 +1,16 @@
 #include "decoder.h"
 
+double levels_100_5[] = {3.689088,2.996565,2.592140,2.305911,2.084631,1.904581,1.753105,1.622648,1.508333,1.406829,1.315757,1.233358,1.158296,1.089527,1.026224,0.967718,0.913459,0.862989,0.815924,0.771937,0.730746,0.692107,0.655809,0.621665,0.589509,0.559193,0.530588,0.503572,0.478041,0.453896,0.431048,0.409418,0.388929,0.369515,0.351111,0.333659,0.317105,0.301398,0.286492,0.272341,0.258906,0.246148,0.234031,0.222520,0.211584,0.201194,0.191320,0.181936,0.173017,0.164540,0.156482,0.148821,0.141538,0.134614,0.128030,0.121770,0.115818,0.110158,0.104775,0.099657,0.094789,0.090159,0.085757,0.081570,0.077587,0.073800,0.070198,0.066771,0.063513,0.060413,0.057465,0.054661,0.051994,0.049457,0.047044,0.044749,0.042566,0.040489,0.038514,0.036635,0.034848,0.033148,0.031531,0.029993,0.028530,0.027139,0.025815,0.024556,0.023358,0.022219,0.021135,0.020104,0.019124,0.018191,0.017304,0.016460,0.015657,0.014893,0.014167,0.013476};
+
+double phi_tilde(double x){
+
+    int index = (int)(x / 0.05);
+            if(index >= 100){
+                return 0;
+    }
+    return levels_100_5[index];
+}
+
 Decoder::Decoder(std::vector<double> received_word, Graph& graph, double variance, std::vector<int> modulated_word, PAM& pam) : received_word(received_word), graph(graph), variance(variance), modulated_word(modulated_word), pam(pam) {
     equalityNodesSize = graph.getEqualityNodesSize();
     wNodesSize =  received_word.size();
@@ -21,6 +32,22 @@ void Decoder::generateGraph(){
         for(int j = 0; j < bit_per_symbol; j++){
             /* Add a link between the w-node and the equality node */
             addLink(i, i*bit_per_symbol + j);
+        }
+    }
+}
+
+void Decoder::printGraph(){
+    int bit_per_symbol = log2(pam.getM());
+    for(int i = 0; i < adjListWNodes.size(); i++){
+        for(int j = 0; j < adjListWNodes[i].size(); j++){
+            std::cout << "adjListWNodes[" << i << "][" << j << "].first: " << adjListWNodes[i][j].first << std::endl;
+            std::cout << "adjListWNodes[" << i << "][" << j << "].second: " << adjListWNodes[i][j].second << std::endl;
+        }
+    }
+    for(int i = 0; i < adjListEqqNodes.size(); i++){
+        for(int j = 0; j < adjListEqqNodes[i].size(); j++){
+            std::cout << "adjListEqqNodes[" << i << "][" << j << "].first: " << adjListEqqNodes[i][j].first << std::endl;
+            std::cout << "adjListEqqNodes[" << i << "][" << j << "].second: " << adjListEqqNodes[i][j].second << std::endl;
         }
     }
 }
@@ -59,10 +86,13 @@ int Decoder::mapGrayNumber(std::vector<int> bit){
 
 std::vector<double> Decoder::calculateLLRwNodes(int output_link, int node_number){
     std::vector<double> LLRwNodes;
+    // Checking all the link connected to the w nodes selected by the node_number
     for(int j = 0; j < adjListWNodes[node_number].size(); j++){
         int dest = adjListWNodes[node_number][j].first;
+        // Checking all the link connected to the equality node selected by dest
         for(int j_first = 0; j_first < adjListEqqNodes[dest].size(); j_first++){
             int dest_first = adjListEqqNodes[dest][j_first].first;
+            // Checking if the equality node selected above has as a destination the w node selected by the node_number
             if(dest_first == node_number && j != output_link){
                 LLRwNodes.push_back(adjListEqqNodes[dest][j_first].second);
             }
@@ -94,7 +124,8 @@ std::vector<std::vector<int>> Decoder::generatePermutation(){
     return possible_permutation;
 }
 
-std::vector<int> Decoder::fastDecodingCycle(){
+std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
+    int counter = 0;
     std::vector<double> g;
     std::vector<int> output_link;
     std::vector<std::vector<int>> vector_map_0;
@@ -121,7 +152,8 @@ std::vector<int> Decoder::fastDecodingCycle(){
                 int k = 0;
                 for(int j_first = 0; j_first < possible_permutation[j].size(); j_first++){
                     /* Flip the bit */
-                    exponent_map_temp[j_first] = !possible_permutation[j][j_first];
+                    //exponent_map_temp[j_first] = !possible_permutation[j][j_first];
+                    exponent_map_temp[j_first] = possible_permutation[j][j_first]? 1 : -1;
                     if(k == i){
                         k++;
                     }
@@ -141,74 +173,79 @@ std::vector<int> Decoder::fastDecodingCycle(){
         }
     }
 
-
-    double num_1;
-    double den_1;
-    double num_2;
-    double den_2;
-    double num;
-    double den;
-    int out = output_link[0];
-    std::vector<std::pair<double, double>> temp_vector;
-
-    for(int i = 0; i < received_word.size(); i++){
-        //Select one of the possibile combinations of vector_map
-        for(int j = 0; j < vector_map_0.size(); j++){
-            //Select one of the possibile combinations of exponent_map
-            std::vector<double> LLRwNodes = calculateLLRwNodes(output_link[j], i);
-            num_1 = calculateGFunction(mapGrayNumber(vector_map_0[j]), i);
-            den_1 = calculateGFunction(mapGrayNumber(vector_map_1[j]), i);
-            num_2 = den_2 = 0.0;
-            for(int k = 0; k < exponent_map_0[j].size(); k++){
-                num_2 += ((double)exponent_map_0[j][k]) * LLRwNodes[k];
-                den_2 += ((double)exponent_map_1[j][k]) * LLRwNodes[k];  
-            }
-            num_2 = exp(num_2);
-            den_2 = exp(den_2);
-            
-            if(out != output_link[j]){
-                temp_vector.push_back(std::make_pair(num, den));
-                out = output_link[j];
-                num = num_1 * num_2;
-                den = den_1 * den_2;
-            } else{
-                num += num_1 * num_2;
-                den += den_1 * den_2;
-            }
-
-        }
-        temp_vector.push_back(std::make_pair(num, den));
-        out = output_link[0];
-
-        //std::cout << "temp_vector.size(): " << temp_vector.size() << std::endl;
-        /*Calculate the LLR for the w-nodes*/
-        for(int j = 0; j < temp_vector.size(); j++){
-            double LLR_temp = temp_vector[j].first/temp_vector[j].second;
-            //std::cout << "LLR_temp: " << LLR_temp << std::endl;
-            adjListWNodes[i][j].second = log(LLR_temp);
-        }
-        //std::cout << "adjListWNodes[i].size(): " << adjListWNodes[i].size() << std::endl;
-        temp_vector.clear();
-    }
-
-    for(int i = 0; i < adjListWNodes.size(); i++){
-        for(int j = 0; j < adjListWNodes[i].size(); j++){   
-            //std::cout << "adjListWNodes[" << i << "][" << j << "]: " << adjListWNodes[i][j].second << std::endl;
-        }
-    }
-
     graph.generateGraph();
+    //graph.printGraph();
     double LLR_g;
     bool codeword = false;
-    int counter = 0;
     std::vector<int> decodedBits(graph.equalityNodesSize);
     double sum_1 = 0;
     double sum = 0;
     /* Vector that contains the sum of the messages that enter in the equality nodes*/
     std::vector<double> vectorEqualityNodes(graph.equalityNodesSize);
    
-    /*Messages that leave the equality nodes*/
+
     while(!codeword){
+        if((fast_decoding_cycle == 1 && counter == 0) || fast_decoding_cycle == 0){
+            double num_1;
+            double den_1;
+            double num_2;
+            double den_2;
+            double num;
+            double den;
+            // For checking which the link is the output
+            int out = output_link[0];
+            std::vector<std::pair<double, double>> temp_vector;
+
+            for(int i = 0; i < received_word.size(); i++){
+                //Select one of the possibile combinations of vector_map
+                for(int j = 0; j < vector_map_0.size(); j++){
+                    //Select one of the possibile combinations of exponent_map
+                    std::vector<double> LLRwNodes = calculateLLRwNodes(output_link[j], i);
+                    if(counter > 0){
+                        for(int i = 0; i < LLRwNodes.size(); i++){
+                            std::cout << "LLRwNodes["<<i<<"]" << LLRwNodes[i] << std::endl;
+                        }
+                        
+                    }
+                    num_1 = calculateGFunction(mapGrayNumber(vector_map_0[j]), i);
+                    den_1 = calculateGFunction(mapGrayNumber(vector_map_1[j]), i);
+                    num_2 = den_2 = 0.0;
+                    for(int k = 0; k < exponent_map_0[j].size(); k++){
+                        num_2 += ((double)exponent_map_0[j][k]) * LLRwNodes[k];
+                        den_2 += ((double)exponent_map_1[j][k]) * LLRwNodes[k];  
+                    }
+                    num_2 = exp(num_2);
+                    den_2 = exp(den_2);
+                    
+                    if(out != output_link[j]){
+                        temp_vector.push_back(std::make_pair(num, den));
+                        out = output_link[j];
+                        num = num_1 * num_2;
+                        den = den_1 * den_2;
+                    } else{
+                        num += num_1 * num_2;
+                        den += den_1 * den_2;
+                    }
+
+                }
+                temp_vector.push_back(std::make_pair(num, den));
+                out = output_link[0];
+                num = den = 0.0;
+
+                //std::cout << "temp_vector.size(): " << temp_vector.size() << std::endl;
+                /*Calculate the LLR for the w-nodes*/
+                for(int j = 0; j < temp_vector.size(); j++){
+                    double LLR_temp = temp_vector[j].first/temp_vector[j].second;
+                    //std::cout << "LLR_temp: " << LLR_temp << std::endl;
+                    adjListWNodes[i][j].second = log(LLR_temp);
+                    //std::cout << "adjListWNodes["<<i<<"]["<<j<<"]: " << adjListWNodes[i][j].second << std::endl;
+                }
+                //std::cout << "adjListWNodes[i].size(): " << adjListWNodes[i].size() << std::endl;
+                temp_vector.clear();
+                
+            }
+        }
+
         /*Messages that leave the equality nodes*/
         for(int i = 0; i < graph.adjListEqualityNodes.size(); i++)
         {
@@ -223,7 +260,6 @@ std::vector<int> Decoder::fastDecodingCycle(){
                     for(int z = 0; z < adjListWNodes[l].size(); z++){
                         if(adjListWNodes[l][z].first == i){
                             sum_1 = adjListWNodes[l][z].second;
-                            //std::cout << "sum_1: " << sum_1 << std::endl;
                             goto jump;
                         }
                     }
@@ -247,24 +283,77 @@ std::vector<int> Decoder::fastDecodingCycle(){
                 }
                 /*Set the message to the current equality node*/
                 graph.adjListEqualityNodes[i][j].second = sum + sum_1;
-                //std::cout << "value: " << graph.adjListEqualityNodes[i][j].second << std::endl;
             }
         }
+        
+        /*Messages that leave the check nodes*/
+        for(int i = 0; i < graph.adjListCheckNodes.size(); i++)
+        {
+            /*Check all the links connected to the current check node*/
+            for(int j = 0; j < graph.adjListCheckNodes[i].size(); j++)
+            {
+                /*Sum of the messages coming from the equality nodes except the destination*/
+                double sum_of_LLR = 0;
+                double product_sign = 1;
+                for(int j_first = 0; j_first < graph.adjListCheckNodes[i].size(); j_first++)
+                {
+                    if(j_first == j)
+                    {
+                        continue;
+                    }
+                    /*Get the destination, so the equality node*/
+                    int dest_first = graph.adjListCheckNodes[i][j_first].first;
+                    for(int j_second = 0; j_second < graph.adjListEqualityNodes[dest_first].size(); j_second++)
+                    {
+                        if(graph.adjListEqualityNodes[dest_first][j_second].first == i)
+                        {   
+                            double modul_LLR = std::fabs(graph.adjListEqualityNodes[dest_first][j_second].second);
+                            sum_of_LLR += graph.phi_tilde(modul_LLR);
+                            product_sign *= graph.sign(graph.adjListEqualityNodes[dest_first][j_second].second);
+                            break;   
+                        }
+                    }
+                }
+                /*Set the message to the current check node*/
+                graph.adjListCheckNodes[i][j].second = product_sign * graph.phi_tilde(sum_of_LLR);
+            }   
+        }
+
         //exit(0);
         /*Sum of the messages that enter in the equality nodes*/
-        for(int i = 0; i < graph.adjListEqualityNodes.size(); i++){
-            double sum_3 = adjListWNodes[i/bit_per_symbol][i%bit_per_symbol].second;
-            for(int j = 0; j < graph.adjListEqualityNodes[i].size(); j++){
-                /*Get the destination, so the check node*/
-                int dest = graph.adjListEqualityNodes[i][j].first;
-                /*Sum of the messages coming from the check nodes*/
-                for(int j_first = 0; j_first < graph.adjListCheckNodes[dest].size(); j_first++){
-                    if(graph.adjListCheckNodes[dest][j_first].first == i){
-                        sum_3 += graph.adjListCheckNodes[dest][j_first].second;
-                    }
-                }      
+        if(fast_decoding_cycle == 0){
+            for(int i = 0; i < graph.adjListEqualityNodes.size(); i++){
+                double sum_5 = adjListWNodes[i/bit_per_symbol][i%bit_per_symbol].second;
+                double sum_4 = 0;
+                for(int j = 0; j < graph.adjListEqualityNodes[i].size(); j++){
+                    /*Get the destination, so the check node*/
+                    int dest = graph.adjListEqualityNodes[i][j].first;
+                    /*Sum of the messages coming from the check nodes*/
+                    for(int j_first = 0; j_first < graph.adjListCheckNodes[dest].size(); j_first++){
+                        if(graph.adjListCheckNodes[dest][j_first].first == i){
+                            sum_4 += graph.adjListCheckNodes[dest][j_first].second;
+                        }
+                    }        
+                }
+                adjListEqqNodes[i][0].second = sum_4;
+                 vectorEqualityNodes[i] = sum_4 + sum_5;
             }
-            vectorEqualityNodes[i] = sum_3;
+        }
+        else{
+            for(int i = 0; i < graph.adjListEqualityNodes.size(); i++){
+                double sum_3 = adjListWNodes[i/bit_per_symbol][i%bit_per_symbol].second;
+                for(int j = 0; j < graph.adjListEqualityNodes[i].size(); j++){
+                    /*Get the destination, so the check node*/
+                    int dest = graph.adjListEqualityNodes[i][j].first;
+                    /*Sum of the messages coming from the check nodes*/
+                    for(int j_first = 0; j_first < graph.adjListCheckNodes[dest].size(); j_first++){
+                        if(graph.adjListCheckNodes[dest][j_first].first == i){
+                            sum_3 += graph.adjListCheckNodes[dest][j_first].second;
+                        }
+                    }      
+                }
+                vectorEqualityNodes[i] = sum_3;
+            }
         }
         /*Marginalization*/
         for(int i = 0; i < vectorEqualityNodes.size(); i++){
@@ -277,11 +366,16 @@ std::vector<int> Decoder::fastDecodingCycle(){
         if(graph.matrix.isCodewordVector(decodedBits)){
             codeword = true;
         }
-        
+        counter++;
+        if(counter == 100){
+            break;
+        }
     }
 
-    std::cout << "counter: " << counter << std::endl;
+    std::cout << counter << std::endl;
     return decodedBits;
 
 }
+
+
 
