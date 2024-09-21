@@ -51,7 +51,7 @@ class Decoder{
         /*Vector of vectors of pair vectors that represents the message sent from the w to the equality nodes*/   
         std::vector<std::vector<std::pair<int, double>>> adjListWNodes;
         /*Vector of vectors of pair vectors that represents the message sent from the equality nodes to the w nodes*/
-        std::vector<std::vector<std::pair<int, double>>> adjListEqqNodes;
+        std::vector<std::pair<int, double>> adjListEqqNodes;
         /*Number of w nodes*/
         int wNodesSize;
         /*Number of equality nodes*/

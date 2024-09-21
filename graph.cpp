@@ -16,11 +16,11 @@ int Graph::getEqualityNodesSize(){
     return equalityNodesSize;
 }
 
-int Graph::sign(double x) {
+double Graph::sign(double x) {
     if (x >= 0) {
-        return 1;  // Positive
+        return 1.0;  // Positive
     } else {
-        return -1; // Negative
+        return -1.0; // Negative
     }
 }
 
@@ -49,11 +49,11 @@ void Graph::generateGraph()
 
 double Graph::phi_tilde(double x) {
     // Calculate e^x
-    double exp_x = std::exp(x);
+    double exp_x = exp(x);
     // Calculate the fraction (e^x + 1) / (e^x - 1)
     double fraction = (exp_x + 1.0) / (exp_x - 1.0);
     // Calculate the natural logarithm of the fraction
-    return std::log(fraction);
+    return log(fraction);
 }
 
 void Graph::printGraph(){
@@ -79,7 +79,7 @@ std::vector<int> Graph::upperMessagePassing(std::vector<double> LLRValues){
     std::vector<int> decodedBits(equalityNodesSize);
 
     while(!codeword){
-        /*Messages that leave the equality nodes*/
+         /*Messages that leave the equality nodes*/
         for(int i = 0; i < adjListEqualityNodes.size(); i++)
         {
             /*Check all the links connected to the current equality node*/
@@ -88,7 +88,7 @@ std::vector<int> Graph::upperMessagePassing(std::vector<double> LLRValues){
                 /*Get the destination of the current link, so the check node*/
                 int dest = adjListEqualityNodes[i][j].first;
                 /*Sum of the messages coming from the check nodes*/
-                int sum = LLRValues[i];
+                double sum = LLRValues[i];
                 /*Check all the links connected to the current equality node*/
                 for(int j_first = 0; j_first < adjListEqualityNodes[i].size(); j_first++){
                     /*If the current link is the same as the one we are checking, skip it*/
@@ -116,11 +116,9 @@ std::vector<int> Graph::upperMessagePassing(std::vector<double> LLRValues){
             /*Check all the links connected to the current check node*/
             for(int j = 0; j < adjListCheckNodes[i].size(); j++)
             {
-                /*Get the destination, so the equality node*/
-                int dest = adjListCheckNodes[i][j].first;
                 /*Sum of the messages coming from the equality nodes except the destination*/
-                double sum_of_LLR = 0;
-                double product_sign = 1;
+                double sum_of_LLR = 0.0;
+                double product_sign = 1.0;
                 for(int j_first = 0; j_first < adjListCheckNodes[i].size(); j_first++)
                 {
                     if(j_first == j)
@@ -169,6 +167,7 @@ std::vector<int> Graph::upperMessagePassing(std::vector<double> LLRValues){
                 decodedBits[i] = 1;
             }
         }
+        counter++;
         if(matrix.isCodewordVector(decodedBits)){
             codeword = true;
         }
@@ -192,7 +191,7 @@ std::vector<int> Graph::messagePassing(std::vector<double> receivedFromChannel, 
 
     for(int i = 0; i < receivedFromChannel.size(); ++i)
     {
-        LLR_g = -(2.0 * receivedFromChannel[i]) / (variance * variance);
+        LLR_g = -(2.0 * receivedFromChannel[i]) / (variance);
         vectorgNodes[i] = LLR_g;
     }
 
@@ -206,7 +205,7 @@ std::vector<int> Graph::messagePassing(std::vector<double> receivedFromChannel, 
                 /*Get the destination of the current link, so the check node*/
                 int dest = adjListEqualityNodes[i][j].first;
                 /*Sum of the messages coming from the check nodes*/
-                int sum = vectorgNodes[i];
+                double sum = vectorgNodes[i];
                 /*Check all the links connected to the current equality node*/
                 for(int j_first = 0; j_first < adjListEqualityNodes[i].size(); j_first++){
                     /*If the current link is the same as the one we are checking, skip it*/
@@ -234,11 +233,9 @@ std::vector<int> Graph::messagePassing(std::vector<double> receivedFromChannel, 
             /*Check all the links connected to the current check node*/
             for(int j = 0; j < adjListCheckNodes[i].size(); j++)
             {
-                /*Get the destination, so the equality node*/
-                int dest = adjListCheckNodes[i][j].first;
                 /*Sum of the messages coming from the equality nodes except the destination*/
-                double sum_of_LLR = 0;
-                double product_sign = 1;
+                double sum_of_LLR = 0.0;
+                double product_sign = 1.0;
                 for(int j_first = 0; j_first < adjListCheckNodes[i].size(); j_first++)
                 {
                     if(j_first == j)

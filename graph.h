@@ -14,7 +14,7 @@ public:
     /*Function to calculate the phi_tilde function*/
     double phi_tilde(double x);
     /*Function to calculate the sign of a number*/
-    int sign(double x);
+    double sign(double x);
 
     // Constructor to initialize the graph
     // Parameters: vertices - number of vertices in the
