@@ -37,7 +37,6 @@ void Graph::addEdge(int src, int dest)
 void Graph::generateGraph()
 {
     std::vector<std::vector<int>> pcm_matrix = matrix.getBinaryMatrix();
-    std::cout << "1" << std::endl;
     for (int i = 0; i < pcm_matrix.size(); ++i) {
         for (int j = 0; j < pcm_matrix[i].size(); ++j) {
             if (pcm_matrix[i][j] == 1) {

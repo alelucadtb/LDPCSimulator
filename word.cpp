@@ -4,6 +4,11 @@
 * Constructors of Word class.                                     *
 ******************************************************************/
 
+Word::Word(){
+	this->len = 0;
+	err = false;
+}
+
 /* Create a Word from an array of boolean values */
 Word::Word(std::vector<int> data){
 	this->len = data.size();

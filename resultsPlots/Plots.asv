@@ -1,0 +1,11 @@
+dati = readmatrix("results.txt");
+
+X = dati(:, 1);  % Prima colonna (valori X)
+Y = dati(:, 2);  % Seconda colonna (valori Y)
+
+% Creare il grafico lineare
+plot(Y, X, '-o');  % Linee con punti marcati
+xlabel('E_b/N_0');
+ylabel('Asse Y');
+title('Grafico Lineare dei Dati');
+grid on;  % Aggiungere la griglia

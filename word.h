@@ -15,6 +15,8 @@ class Word
 	public:
 	
 	/* constructors */
+	Word();
+
 	Word(std::vector<int> data);
 
 	/* copy constructor */
@@ -35,6 +37,8 @@ class Word
 
 	/* hamming distance */
 	friend int hamming_distance(Word& w1, Word& w2);
+
+	friend std::vector<Word&> divideInBlocks(Word& w, int sizeBlock);
 
 	/* stream print operator */
 	friend std::ostream& operator << (std::ostream& os, const Word& v);
