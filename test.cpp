@@ -65,7 +65,7 @@ int main() {
             //std::vector<int> decoded_word_2 = graph.messagePassing(received_word, 0.5);
             /*Print the decoded word*/
             Decoder decoder = Decoder(received_word, graph, i, modulated_word, modulated_pam);
-            std::vector<int> decoded_word_2 = decoder.BICMDecodingCycle(1);
+            std::vector<int> decoded_word_2 = decoder.BICMDecodingCycle(0);
             //std::cout << encoded_word << std::endl;
             
             //std::vector<int> decoded_word_2 = decoder.testingMethod(1);
@@ -77,7 +77,8 @@ int main() {
             Error error = Error();
             if(counter == 0){
                 BER.push_back(error.calculateError(decoded_word_2, encoded_word));
-                SNR.push_back(1/(i*2));
+                // E_b/N_0 for a 8-PAM 
+                SNR.push_back((5.0/3.0) * 1.0/(i*2));
             }else{
                 BER[count] += error.calculateError(decoded_word_2, encoded_word);
             }
