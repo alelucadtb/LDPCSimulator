@@ -38,6 +38,7 @@ class PAM {
      * @return The modulated word
     */
     std::vector<int> MPAMModulate(Word& word);
+    
 };
 
 #endif // PAM_H 

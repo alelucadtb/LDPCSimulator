@@ -85,7 +85,7 @@ std::vector<double> Decoder::calculateLLRwNodes(int output_link, int node_number
 
 double Decoder::calculateGFunction(int d, int l){
     double temp_value_1 = std::fabs(received_word[l] - d);
-    return exp(-1.0*pow(temp_value_1, 2.0)/(2.0*variance));
+    return exp(-1.0 * pow(temp_value_1, 2.0)/(2.0 * variance));
 }
 
 std::vector<std::vector<int>> Decoder::generatePermutation(){
@@ -106,6 +106,15 @@ std::vector<std::vector<int>> Decoder::generatePermutation(){
 }
 
 std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
+    // Counters for the complexity part
+    int addition_counter = 0; //1
+    int multiplication_counter = 0; //2
+    int division_counter = 0; //3
+    int exp_counter = 0; //4
+    int log_counter = 0; //4
+    int comparison_counter = 0; //1
+    int lookup_counter = 0; //1
+    // End of the counters for the complexity part
     int counter = 0;
     std::vector<double> g;
     std::vector<int> output_link;
@@ -133,8 +142,8 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
                 int k = 0;
                 for(int j_first = 0; j_first < possible_permutation[j].size(); j_first++){
                     /* Flip the bit */
-                    //exponent_map_temp[j_first] = !possible_permutation[j][j_first];
-                    exponent_map_temp[j_first] = possible_permutation[j][j_first]? 1 : -1;
+                    exponent_map_temp[j_first] = !possible_permutation[j][j_first];
+                    //exponent_map_temp[j_first] = possible_permutation[j][j_first]? 1 : -1;
                     if(k == i){
                         k++;
                     }
@@ -177,8 +186,10 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
             std::vector<std::pair<double, double>> temp_vector;
 
             for(int i = 0; i < received_word.size(); i++){
+                addition_counter++;
                 //Select one of the possibile combinations of vector_map
                 for(int j = 0; j < vector_map_0.size(); j++){
+                    addition_counter++;
                     //Select one of the possibile combinations of exponent_map
                     std::vector<double> LLRwNodes = calculateLLRwNodes(output_link[j], i);
                     /*if(counter > 0){
@@ -189,27 +200,44 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
                     }*/
                     //std::cout << "step 1" << std::endl;
                     num_1 = calculateGFunction(mapGrayNumber(vector_map_0[j]), i);
+                    exp_counter++;
+                    multiplication_counter = multiplication_counter + 2;
+                    division_counter++;
                     den_1 = calculateGFunction(mapGrayNumber(vector_map_1[j]), i);
+                    exp_counter++;
+                    multiplication_counter = multiplication_counter + 2;
+                    division_counter++;
                     num_2 = den_2 = 0.0;
                     //std::cout << "step 2" << std::endl;
                     //std::cout << "LLRwNodes size: " << LLRwNodes.size() << std::endl;
                     //std::cout << "exponent_map_0[0]:" << exponent_map_0[1].size() << std::endl;
                     for(int k = 0; k < exponent_map_0[j].size(); k++){
+                        addition_counter++;
                         num_2 += ((double)exponent_map_0[j][k]) * LLRwNodes[k];
-                        den_2 += ((double)exponent_map_1[j][k]) * LLRwNodes[k];  
+                        addition_counter++;
+                        den_2 += ((double)exponent_map_1[j][k]) * LLRwNodes[k];
+                        addition_counter++; 
                     }
                     
                     num_2 = exp(num_2);
+                    exp_counter++;
                     den_2 = exp(den_2);
+                    exp_counter++;
                     
                     if(out != output_link[j]){
                         temp_vector.push_back(std::make_pair(num, den));
                         out = output_link[j];
                         num = num_1 * num_2;
+                        multiplication_counter++;
                         den = den_1 * den_2;
+                        multiplication_counter++;
                     } else{
                         num += num_1 * num_2;
+                        addition_counter++;
+                        multiplication_counter++;
                         den += den_1 * den_2;
+                        addition_counter++;
+                        multiplication_counter++;
                     }
 
                 }
@@ -219,9 +247,12 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
                 //std::cout << "temp_vector.size(): " << temp_vector.size() << std::endl;
                 /*Calculate the LLR for the w-nodes*/
                 for(int j = 0; j < temp_vector.size(); j++){
+                    addition_counter++;
                     double LLR_temp = temp_vector[j].first/temp_vector[j].second;
+                    division_counter++;
                     //std::cout << "LLR_temp: " << LLR_temp << std::endl;
                     adjListWNodes[i][j].second = log(LLR_temp);
+                    log_counter++;
                     //std::cout << "adjListWNodes["<<i<<"]["<<j<<"]: " << adjListWNodes[i][j].second << std::endl;
                 }
                 //std::cout << "adjListWNodes[i].size(): " << adjListWNodes[i].size() << std::endl;
@@ -232,15 +263,20 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
         /*Messages that leave the equality nodes*/
         for(int i = 0; i < graph.adjListEqualityNodes.size(); i++)
         {
+            addition_counter++;
             /*Check all the links connected to the current equality node*/
             for(int j = 0; j < graph.adjListEqualityNodes[i].size(); ++j)
             {   
+                addition_counter++;
                 double sum = 0;
                 /*Get the destination of the current link, so the check node*/
                 int dest = graph.adjListEqualityNodes[i][j].first;
                 /*Sum of the messages coming from the w-nodes to the equality node*/
                 for(int l = 0; l < adjListWNodes.size(); l++){
+                    addition_counter++;
                     for(int z = 0; z < adjListWNodes[l].size(); z++){
+                        addition_counter++;
+                        comparison_counter++;
                         if(adjListWNodes[l][z].first == i){
                             sum_1 = adjListWNodes[l][z].second;
                             //std::cout << "sum_1: " << sum_1 << std::endl;
@@ -251,15 +287,20 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
                 jump:
                 /*Check all the links connected to the current equality node*/
                 for(int j_first = 0; j_first < graph.adjListEqualityNodes[i].size(); j_first++){
+                    addition_counter++;
                     /*If the current link is the same as the one we are checking, skip it*/
+                    comparison_counter++;
                     if(j_first == j){
                         continue;
                     }
                     int dest_first = graph.adjListEqualityNodes[i][j_first].first;
                     /*Check all the links connected to the current check node*/
                     for(int j_second = 0; j_second < graph.adjListCheckNodes[dest_first].size(); j_second++){
+                        addition_counter++;
                         /*If destination of the current check nodes is the current equality node, add the message to the sum*/
+                        comparison_counter++;
                         if(graph.adjListCheckNodes[dest_first][j_second].first == i){
+                            addition_counter++;
                             sum += graph.adjListCheckNodes[dest_first][j_second].second;
                             break;
                         }
@@ -274,14 +315,18 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
         /*Messages that leave the check nodes*/
         for(int i = 0; i < graph.adjListCheckNodes.size(); i++)
         {
+            addition_counter++;
             /*Check all the links connected to the current check node*/
             for(int j = 0; j < graph.adjListCheckNodes[i].size(); j++)
             {
+                addition_counter++;
                 /*Sum of the messages coming from the equality nodes except the destination*/
                 double sum_of_LLR = 0.0;
                 double product_sign = 1.0;
                 for(int j_first = 0; j_first < graph.adjListCheckNodes[i].size(); j_first++)
                 {
+                    addition_counter++;
+                    comparison_counter++;
                     if(j_first == j)
                     {
                         continue;
@@ -290,49 +335,68 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
                     int dest_first = graph.adjListCheckNodes[i][j_first].first;
                     for(int j_second = 0; j_second < graph.adjListEqualityNodes[dest_first].size(); j_second++)
                     {
+                        addition_counter++;
+                        comparison_counter++;
                         if(graph.adjListEqualityNodes[dest_first][j_second].first == i)
                         {   
                             double modul_LLR = std::fabs(graph.adjListEqualityNodes[dest_first][j_second].second);
                             sum_of_LLR += graph.phi_tilde(modul_LLR);
+                            addition_counter++;
                             product_sign *= graph.sign(graph.adjListEqualityNodes[dest_first][j_second].second);
+                            multiplication_counter++;
                             break;   
                         }
                     }
                 }
                 /*Set the message to the current check node*/
                 graph.adjListCheckNodes[i][j].second = product_sign * graph.phi_tilde(sum_of_LLR);
+                multiplication_counter++;
             }   
         }
 
         //exit(0);
         /*Sum of the messages that enter in the equality nodes*/
+        comparison_counter++;
         if(fast_decoding_cycle == 0){
             for(int i = 0; i < graph.adjListEqualityNodes.size(); i++){
+                addition_counter++;
                 double sum_5 = adjListWNodes[i/bit_per_symbol][i%bit_per_symbol].second;
+                division_counter = division_counter + 2;
                 double sum_4 = 0;
                 for(int j = 0; j < graph.adjListEqualityNodes[i].size(); j++){
+                    addition_counter++;
                     /*Get the destination, so the check node*/
                     int dest = graph.adjListEqualityNodes[i][j].first;
                     /*Sum of the messages coming from the check nodes*/
                     for(int j_first = 0; j_first < graph.adjListCheckNodes[dest].size(); j_first++){
+                        addition_counter++;
+                        comparison_counter++;
                         if(graph.adjListCheckNodes[dest][j_first].first == i){
                             sum_4 += graph.adjListCheckNodes[dest][j_first].second;
+                            addition_counter++;
                         }
                     }        
                 }
                 adjListEqqNodes[i].second = sum_4;
                 vectorEqualityNodes[i] = sum_4 + sum_5; 
+                addition_counter++;
             }
         }
         else{
             for(int i = 0; i < graph.adjListEqualityNodes.size(); i++){
+                addition_counter++;
                 double sum_3 = adjListWNodes[i/bit_per_symbol][i%bit_per_symbol].second;
+                division_counter = division_counter + 2;
                 for(int j = 0; j < graph.adjListEqualityNodes[i].size(); j++){
+                    addition_counter++;
                     /*Get the destination, so the check node*/
                     int dest = graph.adjListEqualityNodes[i][j].first;
                     /*Sum of the messages coming from the check nodes*/
                     for(int j_first = 0; j_first < graph.adjListCheckNodes[dest].size(); j_first++){
+                        addition_counter++;
+                        comparison_counter++;
                         if(graph.adjListCheckNodes[dest][j_first].first == i){
+                            addition_counter++;
                             sum_3 += graph.adjListCheckNodes[dest][j_first].second;
                         }
                     }      
@@ -342,6 +406,8 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
         }
         /*Marginalization*/
         for(int i = 0; i < vectorEqualityNodes.size(); i++){
+            addition_counter++;
+            comparison_counter++;
             if(vectorEqualityNodes[i] > 0){
                 decodedBits[i] = 0;
             }else{
@@ -351,13 +417,20 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
         if(graph.matrix.isCodewordVector(decodedBits)){
             codeword = true;
         }
+        addition_counter++;
         counter++;
         //std::cout << "counter: " << counter << std::endl;
-        if(counter == 100){
+        comparison_counter++;
+        if(counter == 5){
             break;
         }
     }
 
+    // Part for the complexity of the decoding
+    // The cost for all the operations
+    int cost_of_operations = addition_counter + multiplication_counter*2 + division_counter*3 + exp_counter*4 + log_counter*4 + comparison_counter;
+    int number_of_operations = addition_counter + multiplication_counter + division_counter + exp_counter + log_counter + comparison_counter;
+    //std::cout << "medium cost for an operation: " << cost_of_operations << std::endl;
    
     return decodedBits;
 
