@@ -6,8 +6,8 @@ fastSNR = dati1(:, 2);  % Seconda colonna (valori Y)
 slowBER = dati2(:, 1);
 slowSNR = dati2(:, 2);
 
-fastSNR_dB = 20 * log10(fastSNR);
-slowSNR_dB = 20 * log10(slowSNR);
+fastSNR_dB = 10 * log10(fastSNR);
+slowSNR_dB = 10 * log10(slowSNR);
 
 % Creare il grafico lineare
 figure;

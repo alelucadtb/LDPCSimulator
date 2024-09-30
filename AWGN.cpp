@@ -9,14 +9,14 @@ AWGN::AWGN (){
     std::cerr << "WARNING!, using default initializer is potentially dangerous, default parameters values are used!" << std::endl;
 }
 
-AWGN::AWGN (double mean, double variance, long numberOfSamples){
+AWGN::AWGN (double mean, double variance, int numberOfSamples){
     this->mean = mean;
     this->variance = variance;
     this->numberOfSamples = numberOfSamples;
     this->isSNRMode = false;
 }
 
-AWGN::AWGN (double SNR, long numberOfSamples){
+AWGN::AWGN (double SNR, int numberOfSamples){
     this->mean = 0.0;
     this->variance = 1.0;
     this->numberOfSamples = numberOfSamples;

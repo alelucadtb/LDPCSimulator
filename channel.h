@@ -10,6 +10,7 @@ class Channel {
     
     /*Constructor*/
     Channel(AWGN& awgn);
+    Channel();
 
     /*Destructor*/
     ~Channel();
@@ -20,6 +21,8 @@ class Channel {
      * @return the word after passing through the channel
     */
     std::vector<double> AWGNChannel(std::vector<int>& word);
+
+    std::vector<double> markovChannel(std::vector<double>& word);
 
     private:
 

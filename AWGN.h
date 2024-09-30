@@ -9,15 +9,15 @@ class AWGN {
     
 public:
     AWGN(); // Default constructor
-    AWGN(double mean, double variance, long numberOfSamples); // Constructor with initializers
-    AWGN(double SNR, long numberOfSamples); // Constructor with initializers (SNR)
+    AWGN(double mean, double variance, int numberOfSamples); // Constructor with initializers
+    AWGN(double SNR, int numberOfSamples); // Constructor with initializers (SNR)
     
     std::vector<double> generateNoiseSamples();
     
 private:
     double mean;
     double variance;
-    long numberOfSamples;
+    int numberOfSamples;
     double sigma;
     bool isSNRMode;
     
