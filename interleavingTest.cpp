@@ -48,6 +48,7 @@ int main() {
         if(pcm.isCodeword(encoded_word)){
             /*PAM Modulation*/
             modulated_word = modulated_pam.MPAMModulate(encoded_word);
+            // This matrix has L number of rows that are the modulated word
             interleavingMatrix.push_back(modulated_word);
         }
     
@@ -57,6 +58,7 @@ int main() {
     }*/
     // Interleaving
     Interleaving inter = Interleaving();
+    // Matrix for the interleaving
     std::vector<std::vector<double>> interleaved = inter.interleaving(interleavingMatrix);
     
     std::vector<std::vector<double>> received_block; 

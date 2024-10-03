@@ -26,7 +26,7 @@ class Channel {
 
     private:
 
-    AWGN& awgn;
+    AWGN awgn;
 
 };
 

@@ -1,10 +1,10 @@
 dati1 = readmatrix("fastComplexity.txt");
 dati2 = readmatrix("slowComplexity.txt");
 
-fastOperations = dati1(:, 1);  % Prima colonna (valori X)
-fastSNR = dati1(:, 2);  % Seconda colonna (valori Y)
-slowOperations = dati2(:, 1);  % Prima colonna (valori X)
-slowSNR = dati2(:, 2);  % Seconda colonna (valori Y)
+fastOperations = dati1(:, 2);  % Prima colonna (valori X)
+fastSNR = dati1(:, 1);  % Seconda colonna (valori Y)
+slowOperations = dati2(:, 2);  % Prima colonna (valori X)
+slowSNR = dati2(:, 1);  % Seconda colonna (valori Y)
 
 fastSNR_dB = 10 * log10(fastSNR);
 slowSNR_dB = 10 * log10(slowSNR);

@@ -16,6 +16,7 @@ std::vector<std::vector<double>> Interleaving::interleaving(std::vector<std::vec
         result.push_back(resultTmp);
         resultTmp.clear();
     }
+    return result;
 }
 
 std::vector<std::vector<double>> Interleaving::deinterleaving(std::vector<std::vector<double>> matrix){
@@ -28,4 +29,5 @@ std::vector<std::vector<double>> Interleaving::deinterleaving(std::vector<std::v
         result.push_back(resultTmp);
         resultTmp.clear();
     }
+    return result;
 }

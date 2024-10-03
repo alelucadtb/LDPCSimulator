@@ -8,12 +8,14 @@ slowSNR = dati2(:, 2);
 
 fastSNR_dB = 10 * log10(fastSNR);
 slowSNR_dB = 10 * log10(slowSNR);
+fastBER_dB = 10 * log10(fastBER);
+slowBER_dB = 10 * log10(slowBER);
 
 % Creare il grafico lineare
 figure;
-plot(fastSNR_dB, fastBER, '-r', 'LineWidth', 2);
+loglog(fastSNR, fastBER, '-r', 'LineWidth', 2);
 hold on
-plot(slowSNR_dB, slowBER, '--b', 'LineWidth', 2);
+loglog(slowSNR, slowBER, '--b', 'LineWidth', 2);
 xlabel('E_b/N_0 [dB]', 'FontName', 'Times New Roman');
 ylabel('BER', 'FontName', 'Times New Roman');
 title('Fast vs Slow decoding cycle LDPC code with 8-PAM', 'FontName', 'Times New Roman','FontSize', 16);

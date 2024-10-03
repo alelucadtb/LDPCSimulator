@@ -4,7 +4,7 @@ Channel::Channel(AWGN& awgn) : awgn(awgn) {
 }
 
 Channel::Channel() {
-
+    this->awgn = AWGN();
 }
 
 Channel::~Channel() = default;

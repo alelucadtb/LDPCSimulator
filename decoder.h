@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <bitset>
+#include <utility>
 #include "paritycheckmatrix.h"
 #include "graph.h"
 #include "pam.h"
@@ -20,7 +21,7 @@ class Decoder{
         ~Decoder();
 
         /*Decode the received word*/
-        std::vector<int> BICMDecodingCycle(int fast_decoding_cycle); 
+        std::pair<std::vector<int>, int> BICMDecodingCycle(int fast_decoding_cycle); 
         /*Print the graph*/
         void printGraph();
 

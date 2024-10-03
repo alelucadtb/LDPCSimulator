@@ -19,19 +19,22 @@ std::vector<int> generateRandomVector(int len) {
 int main() {
     std::vector<double> iValue;
     // Associate for different value of the variance a different number of repetion of the cycle
-    std::vector<std::pair<double, int>> numberOfCodeword = {{0.3, 10000}, {0.4, 10000}, {0.5, 10000}, {0.6, 5000}, {0.7, 1000}, {0.8, 1000}, {1.0, 1000}, {1.1, 100}, {1.2, 10}, {1.3, 10}, {1.4, 10}, {1.5, 10}, {2, 10}, {2.5, 10}, {3, 10}, {3.5, 10}};
-    //std::vector<std::pair<double, int>> numberOfCodeword = {{0.3, 1}, {0.4, 1}, {0.5, 1}, {0.51, 1}, {0.53, 1}, {0.54, 1}, {0.56, 1}, {0.57, 1}, {0.6, 1}, {0.7, 1}, {0.8, 1}};
+    //std::vector<std::pair<double, int>> numberOfCodeword = {{0.1, 10000}, {0.2, 10000}, {0.3, 10000}, {0.4, 10000}, {0.5, 10000}, {0.6, 5000}, {0.7, 1000}, {0.8, 1000}, {1.0, 1000}, {1.1, 100}, {1.2, 10}, {1.3, 10}, {1.4, 10}, {1.5, 10}, {2, 10}, {2.5, 10}, {3, 10}, {3.5, 10}};
+    //std::vector<std::pair<double, int>> numberOfCodeword = {{0.3, 100}, {0.4, 100}, {0.5, 100}, {0.51, 100}, {0.53, 100}, {0.54, 100}, {0.56, 100}, {0.58, 100}, {0.6, 100}, {0.7, 100}, {0.8, 100}};
+    std::vector<std::pair<double, int>> numberOfCodeword = {{0.7, 100}, {0.9, 100}, {1, 100}, {1.5, 100}, {2, 100}, {2.5, 100}, {3, 100}, {3.5, 100}};
+    //std::vector<std::pair<double, int>> numberOfCodeword = {{3, 1}};}
 
     for(int j = 0; j < numberOfCodeword.size(); j++){
         // Temporary value for the BER and SNR
         double BERtmp = 0.0;
         double SNRtmp = 0.0;
+        int totalCost = 0.0;
         int counter = 0;
         for(int z = 0; z < numberOfCodeword[j].second; z++){
-            double R = 5.0/6.0;
+            double R = 1.0/2.0;
             int count = 0;
             /*Create the parity check matrix*/
-            ParityCheckMatrix pcm = ParityCheckMatrix(648, 27, R, "n648_Z27_R56.txt");
+            ParityCheckMatrix pcm = ParityCheckMatrix(648, 27, R, "n648_Z27_R12.txt");
             pcm.writeBinaryMatrix("binary_matrix.txt");
 
             Encoder encoder = Encoder(pcm);
@@ -71,7 +74,7 @@ int main() {
             //std::vector<int> decoded_word_2 = graph.messagePassing(received_word, 0.5);
             /*Print the decoded word*/
             Decoder decoder = Decoder(received_word, graph, numberOfCodeword[j].first, modulated_word, modulated_pam);
-            std::vector<int> decoded_word_2 = decoder.BICMDecodingCycle(0);
+            std::pair<std::vector<int>, int> decoded_word_2 = decoder.BICMDecodingCycle(0);
             //std::cout << encoded_word << std::endl;
             
             //std::vector<int> decoded_word_2 = decoder.testingMethod(1);
@@ -79,14 +82,16 @@ int main() {
                 std::cout << decoded_word_2[i];
             }
             std::cout << std::endl;*/
+            totalCost += decoded_word_2.second;
             Error error = Error();
-            BERtmp += error.calculateError(decoded_word_2, encoded_word);
+            BERtmp += error.calculateError(decoded_word_2.first, encoded_word);
             counter++;
         }
         SNRtmp = (5.0/3.0) * 1.0/(numberOfCodeword[j].first * 2.0);
         //std::cout << SNRtmp << std::endl;
         std::cout << BERtmp/(double)numberOfCodeword[j].second << "\t" << SNRtmp << "\t" << numberOfCodeword[j].first << std::endl;
         std::cout << "counter: " << counter << std::endl;
+        //std::cout << totalCost/counter << std::endl;
     }
 
     return 0;

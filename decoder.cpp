@@ -105,8 +105,8 @@ std::vector<std::vector<int>> Decoder::generatePermutation(){
     return possible_permutation;
 }
 
-std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
-    // Counters for the complexity part
+std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
+    // Counters for the complexity calculation
     int addition_counter = 0; //1
     int multiplication_counter = 0; //2
     int division_counter = 0; //3
@@ -114,7 +114,7 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
     int log_counter = 0; //4
     int comparison_counter = 0; //1
     int lookup_counter = 0; //1
-    // End of the counters for the complexity part
+    // End of the counters for the complexity calculation
     int counter = 0;
     std::vector<double> g;
     std::vector<int> output_link;
@@ -174,6 +174,7 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
 
     while(!codeword){
         if((fast_decoding_cycle == 1 && counter == 0) || fast_decoding_cycle == 0){
+            //std::cout << "if" << std::endl;
             double num_1;
             double den_1;
             double num_2;
@@ -421,7 +422,7 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
         counter++;
         //std::cout << "counter: " << counter << std::endl;
         comparison_counter++;
-        if(counter == 5){
+        if(counter == 20){
             break;
         }
     }
@@ -431,8 +432,8 @@ std::vector<int> Decoder::BICMDecodingCycle(int fast_decoding_cycle){
     int cost_of_operations = addition_counter + multiplication_counter*2 + division_counter*3 + exp_counter*4 + log_counter*4 + comparison_counter;
     int number_of_operations = addition_counter + multiplication_counter + division_counter + exp_counter + log_counter + comparison_counter;
     //std::cout << "medium cost for an operation: " << cost_of_operations << std::endl;
-   
-    return decodedBits;
+    
+    return std::make_pair(decodedBits, cost_of_operations);
 
 }
 
