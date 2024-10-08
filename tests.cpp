@@ -20,8 +20,8 @@ int main() {
     std::vector<double> iValue;
     // Associate for different value of the variance a different number of repetion of the cycle
     //std::vector<std::pair<double, int>> numberOfCodeword = {{0.1, 10000}, {0.2, 10000}, {0.3, 10000}, {0.4, 10000}, {0.5, 10000}, {0.6, 5000}, {0.7, 1000}, {0.8, 1000}, {1.0, 1000}, {1.1, 100}, {1.2, 10}, {1.3, 10}, {1.4, 10}, {1.5, 10}, {2, 10}, {2.5, 10}, {3, 10}, {3.5, 10}};
-    //std::vector<std::pair<double, int>> numberOfCodeword = {{0.3, 100}, {0.4, 100}, {0.5, 100}, {0.51, 100}, {0.53, 100}, {0.54, 100}, {0.56, 100}, {0.58, 100}, {0.6, 100}, {0.7, 100}, {0.8, 100}};
-    std::vector<std::pair<double, int>> numberOfCodeword = {{0.7, 100}, {0.9, 100}, {1, 100}, {1.5, 100}, {2, 100}, {2.5, 100}, {3, 100}, {3.5, 100}};
+    std::vector<std::pair<double, int>> numberOfCodeword = {{0.3, 100}, {0.4, 100}, {0.5, 100}, {0.51, 100}, {0.53, 100}, {0.54, 100}, {0.56, 100}, {0.58, 100}, {0.6, 100}, {0.7, 100}, {0.8, 100}};
+    //std::vector<std::pair<double, int>> numberOfCodeword = {{0.7, 100}, {0.9, 100}, {1, 100}, {1.5, 100}, {2, 100}, {2.5, 100}, {3, 100}, {3.5, 100}};
     //std::vector<std::pair<double, int>> numberOfCodeword = {{3, 1}};}
 
     for(int j = 0; j < numberOfCodeword.size(); j++){

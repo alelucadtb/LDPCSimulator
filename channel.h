@@ -22,7 +22,9 @@ class Channel {
     */
     std::vector<double> AWGNChannel(std::vector<int>& word);
 
-    std::vector<double> markovChannel(std::vector<double>& word);
+    std::pair<std::vector<double>, double> markovChannel(std::vector<double>& word);
+
+    std::tuple<std::vector<double>, double, std::vector<double>> storeMarkovChannel(std::vector<double>& word);
 
     private:
 

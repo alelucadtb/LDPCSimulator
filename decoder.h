@@ -16,6 +16,8 @@ class Decoder{
     public:
         /*Constructor*/
         Decoder(std::vector<double> received_word, Graph& graph, double variance, std::vector<int> modulated_word, PAM& pam);
+        // Constructor for the interleaving path
+        Decoder(std::vector<double> received_word, Graph& graph, std::vector<double> varianceVector, std::vector<int> modulated_word, PAM& pam);
 
         /*Destructor*/
         ~Decoder();
@@ -24,11 +26,8 @@ class Decoder{
         std::pair<std::vector<int>, int> BICMDecodingCycle(int fast_decoding_cycle); 
         /*Print the graph*/
         void printGraph();
-
-        /*Method for debugging*/
-        std::vector<int> testingMethod(double variance);
-
-        std::vector<double> equalityTesting(std::vector<std::vector<std::pair<int, double>>> adjListWNode);
+        // For the interleaving path
+        std::pair<std::vector<int>, int> interleavingBICMDecodingCycle(int fast_decoding_cycle); 
 
     private:
         /*The received word from the channel (r_l)*/
@@ -37,6 +36,7 @@ class Decoder{
         Graph& graph;
         /*The variance*/
         double variance;
+        std::vector<double> varianceVector;
         /*The modulated word from the M-PAM modulator (d_l). It is what we send to the channel*/
         std::vector<int> modulated_word;
         /**
@@ -67,6 +67,8 @@ class Decoder{
         std::vector<double> calculateLLRwNodes(int output_link, int node_number);
         /*Calculate g function*/
         double calculateGFunction(int d, int i);
+        // For the fact that we have different variance if we consider the Markov model
+        double calculateInterleavingGFunction(int d, int i);
         /*Generate the permutation of log2(M)-1 bits*/
         std::vector<std::vector<int>> generatePermutation();
         /*Flip a bit*/
