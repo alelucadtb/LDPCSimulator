@@ -19,54 +19,48 @@ std::vector<double> Channel::AWGNChannel(std::vector<int>& word){
     return received_word;
 }  
 
-std::pair<std::vector<double>, double> Channel::markovChannel(std::vector<double>& word){
-    std::srand(std::time(0));
-    std::vector<double> received_word(word.size());
-    int random_number = rand() % 2;
-    // Good state situation
-    AWGN awgnGood(0.0, 0.1, word.size());
-    // Bad state situation
-    AWGN awgnBad(0.0, 2.0, word.size());
-    std::vector<double> goodNoiseVector = awgnGood.generateNoiseSamples();
-    std::vector<double> badNoiseVector = awgnBad.generateNoiseSamples();
+std::pair<std::vector<double>, std::vector<double> > Channel::markovChannel(std::vector<double> word){
+    std::vector<double> received_word;
+    // Vector that collects the different variance fo the symbols
+    std::vector<double> differentVariance;
+    // Every symbols of the modulated word has a different variance, chosen by the Markov channel
+    // For the generation of the random number
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist10(1,10);
+    // Distribution in range [1, 10]
+    // Initial state for the Markov chain
 
-    if(random_number == 0){
-        for (int i = 0; i < word.size(); i++) {
-            received_word[i] = word[i] + goodNoiseVector[i];
+    for(int i = 0; i < word.size(); i++){
+        int random_number = dist10(rng);
+        // Good state situation
+        AWGN awgnGood(0.0, 0.1, 1);
+        // Bad state situation
+        AWGN awgnBad(0.0, 1.0, 1);
+        std::vector<double> goodNoiseVector = awgnGood.generateNoiseSamples();
+        std::vector<double> badNoiseVector = awgnBad.generateNoiseSamples();
+        // std::cout << "random: " << random_number << std::endl;
+        // std::cout << "state: " << actualState << std::endl;
+        // The two states Markov chain
+        if(random_number < 9){
+            if (actualState == 0){
+                received_word.push_back(word[i] + goodNoiseVector[0]);
+                differentVariance.push_back(0.1);
+            }else{
+                received_word.push_back(word[i] + badNoiseVector[0]);
+                differentVariance.push_back(1.0);
+            }
+        }else{
+            if (actualState == 0){
+                received_word.push_back(word[i] + badNoiseVector[0]);
+                differentVariance.push_back(1.0);
+                actualState = 1;
+            }else{
+                received_word.push_back(word[i] + goodNoiseVector[0]);
+                differentVariance.push_back(0.1);
+                actualState = 0;
+            } 
         }
-        double variance = 0.1;
-        return std::make_pair(received_word, variance);
-    }else{
-        for (int i = 0; i < word.size(); i++) {
-            received_word[i] = word[i] + badNoiseVector[i];
-        }
-        double variance = 2.0;
-        return std::make_pair(received_word, variance);
     }
-}
-
-std::tuple<std::vector<double>, double, std::vector<double>> Channel::storeMarkovChannel(std::vector<double>& word){
-    std::srand(std::time(0));
-    std::vector<double> received_word(word.size());
-    int random_number = rand() % 2;
-    // Good state situation
-    AWGN awgnGood(0.0, 0.1, word.size());
-    // Bad state situation
-    AWGN awgnBad(0.0, 2.0, word.size());
-    std::vector<double> goodNoiseVector = awgnGood.generateNoiseSamples();
-    std::vector<double> badNoiseVector = awgnBad.generateNoiseSamples();
-
-    if(random_number == 0){
-        for (int i = 0; i < word.size(); i++) {
-            received_word[i] = word[i] + goodNoiseVector[i];
-        }
-        double variance = 0.1;
-        return std::make_tuple(received_word, variance, goodNoiseVector);
-    }else{
-        for (int i = 0; i < word.size(); i++) {
-            received_word[i] = word[i] + badNoiseVector[i];
-        }
-        double variance = 2.0;
-        return std::make_tuple(received_word, variance, badNoiseVector);
-    }
+    return std::make_pair(received_word, differentVariance);
 }

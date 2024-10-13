@@ -67,12 +67,19 @@ int main() {
         std::vector<std::vector<double>> received_block;
         // The chosen variance of the Markov channel, depending on the good state or bad state
         std::vector<std::vector<double>> lineVariance;
-    
+
+        /*for(int i = 0; i < interleaved.size(); i++){
+            for(int j = 0; j < interleaved[i].size(); j++){
+                std::cout << interleaved[i][j] << std::endl;
+            }
+        }*/
+        
         /*AWGN Channel*/
         Channel channel = Channel();
         for(int i = 0; i < interleaved.size(); i++){   
-            std::vector<double> received_word = (channel.markovChannel(interleaved[i])).first;
-            std::vector<double> tmpVariance (interleaved[i].size(), (channel.markovChannel(interleaved[i])).second);
+            auto result = channel.markovChannel(interleaved[i]); // Call once
+            std::vector<double> received_word = result.first; // Get the received word
+            std::vector<double> tmpVariance = result.second; // Get the variance
             lineVariance.push_back(tmpVariance);
             received_block.push_back(received_word);
         }

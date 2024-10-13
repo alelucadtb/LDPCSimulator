@@ -87,6 +87,10 @@ std::vector<double> Decoder::calculateLLRwNodes(int output_link, int node_number
             LLRwNodes.push_back(adjListEqqNodes[dest].second);
         }
     }
+    /*for(int i = 0; i < LLRwNodes.size(); i++){
+        std::cout << LLRwNodes[i] << " ";
+    }
+    std::cout << std::endl;*/
     return LLRwNodes;
 }
 
@@ -129,10 +133,12 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
     // End of the counters for the complexity calculation
     // Iterations of the while
     int counter = 0;
-    std::vector<double> g;
+    // Identifies the output link of the conform nodes
     std::vector<int> output_link;
+    // Identifies the possible input of the g function
     std::vector<std::vector<int>> vector_map_0;
     std::vector<std::vector<int>> vector_map_1;
+    //Identifies the possible values for the exponential in the LLR formula for the conform nodes
     std::vector<std::vector<int>> exponent_map_0;
     std::vector<std::vector<int>> exponent_map_1;
     double temp_1;
@@ -175,7 +181,20 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
             }
         }
     }
-
+    /*std::cout << "vectormap0" << std::endl;
+    for(int i = 0; i < vector_map_0.size(); i++){
+        for(int j = 0; j < vector_map_0[i].size(); j++){
+            std::cout << vector_map_0[i][j];
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "vectormap1" << std::endl;
+    for(int i = 0; i < vector_map_1.size(); i++){
+        for(int j = 0; j < vector_map_1[i].size(); j++){
+            std::cout << vector_map_1[i][j];
+        }
+        std::cout << std::endl;
+    }*/
     //graph.printGraph();
     double LLR_g;
     bool codeword = false;
@@ -187,7 +206,6 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
 
     while(!codeword){
         if((fast_decoding_cycle == 1 && counter == 0) || fast_decoding_cycle == 0){
-            //std::cout << "if" << std::endl;
             double num_1;
             double den_1;
             double num_2;
@@ -195,10 +213,11 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
             double num;
             double den;
             int count = 0;
-            // For checking which the link is the output
+            // For checking which the link is the output of the conform nodes
             int out = output_link[0];
             std::vector<std::pair<double, double>> temp_vector;
 
+            // Calculate the LLR for the conform nodes
             for(int i = 0; i < received_word.size(); i++){
                 addition_counter++;
                 //Select one of the possibile combinations of vector_map

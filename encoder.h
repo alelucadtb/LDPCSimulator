@@ -18,7 +18,7 @@ class Encoder {
      * Transforms the parity check matrix H into the generating matrix G
      * @return A vector of vectors representing the generating matrix G
     */
-    std::vector<std::vector<int>> getGeneratingMatrix();
+    std::vector<std::vector<int> > getGeneratingMatrix();
 
     /**
      * Encodes a word using the generating matrix G
@@ -35,7 +35,7 @@ class Encoder {
      * Applies Gaussian elimination to the parity check matrix H
      * @return A vector of vectors representing the generating matrix G
     */
-    std::vector<std::vector<int>> gauss_reduce(Encoder& encoder);
+    std::vector<std::vector<int> > gauss_reduce(Encoder& encoder);
 };
 
 #endif // ENCODER_H

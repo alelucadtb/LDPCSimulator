@@ -22,13 +22,18 @@ class Channel {
     */
     std::vector<double> AWGNChannel(std::vector<int>& word);
 
-    std::pair<std::vector<double>, double> markovChannel(std::vector<double>& word);
-
-    std::tuple<std::vector<double>, double, std::vector<double>> storeMarkovChannel(std::vector<double>& word);
+    /**
+     * Representation of the Markov model channel
+     * @param word: the modulated word to be trasmitted
+     * @return the word after passing through the channel
+     * @return the different variances used by the channel
+     */
+    std::pair<std::vector<double>, std::vector<double> > markovChannel(std::vector<double> word);
 
     private:
 
     AWGN awgn;
+    int actualState = 0;
 
 };
 
