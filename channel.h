@@ -28,7 +28,7 @@ class Channel {
      * @return the word after passing through the channel
      * @return the different variances used by the channel
      */
-    std::pair<std::vector<double>, std::vector<double> > markovChannel(std::vector<double> word);
+    std::pair<std::vector<double>, std::vector<double> > markovChannel(std::vector<double>& word);
 
     private:
 

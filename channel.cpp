@@ -19,7 +19,7 @@ std::vector<double> Channel::AWGNChannel(std::vector<int>& word){
     return received_word;
 }  
 
-std::pair<std::vector<double>, std::vector<double> > Channel::markovChannel(std::vector<double> word){
+std::pair<std::vector<double>, std::vector<double> > Channel::markovChannel(std::vector<double>& word){
     std::vector<double> received_word;
     // Vector that collects the different variance fo the symbols
     std::vector<double> differentVariance;
@@ -42,7 +42,7 @@ std::pair<std::vector<double>, std::vector<double> > Channel::markovChannel(std:
         // std::cout << "random: " << random_number << std::endl;
         // std::cout << "state: " << actualState << std::endl;
         // The two states Markov chain
-        if(random_number < 9){
+        if(random_number < 10){
             if (actualState == 0){
                 received_word.push_back(word[i] + goodNoiseVector[0]);
                 differentVariance.push_back(0.1);

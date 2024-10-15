@@ -17,8 +17,21 @@ std::vector<int> generateRandomVector(int len) {
     return random_vector;
 }
 
+std::vector<std::vector<double>> divideVector(const std::vector<double>& original, size_t size) {
+    std::vector<std::vector<double>> results;
+    
+    for (size_t i = 0; i < original.size(); i += size) {
+        // Create a new subvector
+        std::vector<double> subvector(original.begin() + i,
+                                       original.begin() + std::min(original.size(), i + size));
+        results.push_back(subvector);
+    }
+    
+    return results;
+}
+
 int main() {
-    std::vector<int> depthVector = {1, 5, 10, 50, 100, 250, 500, 750, 1000};
+    std::vector<int> depthVector = {1, 5, 10, 50, 100, 300};
     
     for(int i = 0; i < depthVector.size(); i++){
         int depths = depthVector[i];
@@ -38,26 +51,32 @@ int main() {
         std::vector<PAM> modulated_pam_vector;
         std::vector<std::vector<int>> modulated_word_vector;
         std::vector<Word> encoded_word_vector;
-        
-        for(int i = 0; i < depths; i++){
-            /*Generate a random data word*/
-            Word data_word = Word(generateRandomVector(540));
-            /*Encode the data word*/
-            Word encoded_word = encoder.encode(data_word);
-            encoded_word_vector.push_back(encoded_word);
-            PAM modulated_pam = PAM(encoded_word, 8);
-            modulated_pam_vector.push_back(modulated_pam);
-            /*Check if the encoded word is a codeword*/
-            std::vector<int> modulated_word;
+        int codewordsInABlock = 300/depths;
+        std::vector<int> blockOfWords;
 
-            if(pcm.isCodeword(encoded_word)){
-                /*PAM Modulation*/
-                modulated_word = modulated_pam.MPAMModulate(encoded_word);
-                modulated_word_vector.push_back(modulated_word);
-                // This matrix has L number of rows that are the modulated word
-                interleavingMatrix.push_back(modulated_word);
+        for(int i = 0; i < depths; i++){
+            for(int j = 0; j < codewordsInABlock; j++){
+                Word data_word = Word(generateRandomVector(540));
+                /*Encode the data word*/
+                Word encoded_word = encoder.encode(data_word);
+                encoded_word_vector.push_back(encoded_word);
+                PAM modulated_pam = PAM(encoded_word, 8);
+                modulated_pam_vector.push_back(modulated_pam);
+                std::vector<int> modulated_word;
+                
+
+                /*Check if the encoded word is a codeword*/
+                if(pcm.isCodeword(encoded_word)){
+                    /*PAM Modulation*/
+                    modulated_word = modulated_pam.MPAMModulate(encoded_word);
+                    modulated_word_vector.push_back(modulated_word);
+                    // This matrix has L number of rows that are the modulated word
+                    blockOfWords.insert(blockOfWords.end(), modulated_word.begin(), modulated_word.end());   
+                }
             }
-        
+            interleavingMatrix.push_back(blockOfWords);
+            blockOfWords.clear();
+            /*Generate a random data word*/
         }
         
         // Interleaving
@@ -94,12 +113,19 @@ int main() {
         
         // Vector for saving the results
         std::vector<std::vector<int>> finalResults;
+        int mod_count = 0;
 
         /*Print the decoded word*/
         for(int i = 0; i < deinterleaved.size(); i++){
-            Decoder decoder = Decoder(deinterleaved[i], graph, deLineVariance[i], modulated_word_vector[i], modulated_pam_vector[i]);
-            std::pair<std::vector<int>, int> decoded_word = decoder.interleavingBICMDecodingCycle(0);
-            finalResults.push_back(decoded_word.first);
+            std::vector<std::vector<double>> listOfCodewords = divideVector(deinterleaved[i], 216);
+            std::vector<std::vector<double>> listOfVariances = divideVector(deLineVariance[i], 216);
+            //std::cout << listOfCodewords.size() << " " << listOfVariances.size() << std::endl;
+            for(int j = 0; j < listOfCodewords.size(); j++){
+                Decoder decoder = Decoder(listOfCodewords[j], graph, listOfVariances[j], modulated_word_vector[mod_count], modulated_pam_vector[mod_count]);
+                std::pair<std::vector<int>, int> decoded_word = decoder.interleavingBICMDecodingCycle(1);
+                finalResults.push_back(decoded_word.first);
+                mod_count++;
+            } 
         }
     
         Error error = Error();

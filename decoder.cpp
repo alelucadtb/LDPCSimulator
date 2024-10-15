@@ -1,28 +1,27 @@
 #include "decoder.h"
 
-double levels_100_5[] = {3.689088,2.996565,2.592140,2.305911,2.084631,1.904581,1.753105,1.622648,1.508333,1.406829,1.315757,1.233358,1.158296,1.089527,1.026224,0.967718,0.913459,0.862989,0.815924,0.771937,0.730746,0.692107,0.655809,0.621665,0.589509,0.559193,0.530588,0.503572,0.478041,0.453896,0.431048,0.409418,0.388929,0.369515,0.351111,0.333659,0.317105,0.301398,0.286492,0.272341,0.258906,0.246148,0.234031,0.222520,0.211584,0.201194,0.191320,0.181936,0.173017,0.164540,0.156482,0.148821,0.141538,0.134614,0.128030,0.121770,0.115818,0.110158,0.104775,0.099657,0.094789,0.090159,0.085757,0.081570,0.077587,0.073800,0.070198,0.066771,0.063513,0.060413,0.057465,0.054661,0.051994,0.049457,0.047044,0.044749,0.042566,0.040489,0.038514,0.036635,0.034848,0.033148,0.031531,0.029993,0.028530,0.027139,0.025815,0.024556,0.023358,0.022219,0.021135,0.020104,0.019124,0.018191,0.017304,0.016460,0.015657,0.014893,0.014167,0.013476};
+/*double levels_100_5[] = {3.689088,2.996565,2.592140,2.305911,2.084631,1.904581,1.753105,1.622648,1.508333,1.406829,1.315757,1.233358,1.158296,1.089527,1.026224,0.967718,0.913459,0.862989,0.815924,0.771937,0.730746,0.692107,0.655809,0.621665,0.589509,0.559193,0.530588,0.503572,0.478041,0.453896,0.431048,0.409418,0.388929,0.369515,0.351111,0.333659,0.317105,0.301398,0.286492,0.272341,0.258906,0.246148,0.234031,0.222520,0.211584,0.201194,0.191320,0.181936,0.173017,0.164540,0.156482,0.148821,0.141538,0.134614,0.128030,0.121770,0.115818,0.110158,0.104775,0.099657,0.094789,0.090159,0.085757,0.081570,0.077587,0.073800,0.070198,0.066771,0.063513,0.060413,0.057465,0.054661,0.051994,0.049457,0.047044,0.044749,0.042566,0.040489,0.038514,0.036635,0.034848,0.033148,0.031531,0.029993,0.028530,0.027139,0.025815,0.024556,0.023358,0.022219,0.021135,0.020104,0.019124,0.018191,0.017304,0.016460,0.015657,0.014893,0.014167,0.013476};
 
-double phi_tilde(double x){
+double phi_tilde_quant(double x){
 
     int index = (int)(x / 0.05);
             if(index >= 100){
                 return 0;
     }
     return levels_100_5[index];
-}
+}*/
 
 Decoder::Decoder(std::vector<double> received_word, Graph& graph, double variance, std::vector<int> modulated_word, PAM& pam) : received_word(received_word), graph(graph), variance(variance), modulated_word(modulated_word), pam(pam) {
     equalityNodesSize = graph.getEqualityNodesSize();
     wNodesSize =  received_word.size();
     adjListWNodes = std::vector<std::vector<std::pair<int, double>>>(wNodesSize);
-    adjListEqqNodes = std::vector<std::pair<int, double>>(equalityNodesSize);
+    
 }
 
 Decoder::Decoder(std::vector<double> received_word, Graph& graph, std::vector<double> varianceVector, std::vector<int> modulated_word, PAM& pam) : received_word(received_word), graph(graph), varianceVector(varianceVector), modulated_word(modulated_word), pam(pam) {
     equalityNodesSize = graph.getEqualityNodesSize();
     wNodesSize =  received_word.size();
     adjListWNodes = std::vector<std::vector<std::pair<int, double>>>(wNodesSize);
-    adjListEqqNodes = std::vector<std::pair<int, double>>(equalityNodesSize);
 }
 
 Decoder::~Decoder() {}
@@ -92,6 +91,19 @@ std::vector<double> Decoder::calculateLLRwNodes(int output_link, int node_number
     }
     std::cout << std::endl;*/
     return LLRwNodes;
+}
+
+void Decoder::printGraph(){
+    for(int i = 0; i < adjListWNodes.size(); i++){
+        for(int j = 0; j < adjListWNodes[i].size(); j++){
+            std::cout << "adjListWNodes[" << i << "][" << j << "].first: " << adjListWNodes[i][j].first << std::endl;
+            std::cout << "adjListWNodes[" << i << "][" << j << "].second: " << adjListWNodes[i][j].second << std::endl;
+        }
+    }
+    for(int i = 0; i < adjListEqqNodes.size(); i++){
+            std::cout << "adjListEqqNodes[" << i << "].first: " << adjListEqqNodes[i].first << std::endl;
+            std::cout << "adjListEqqNodes[" << i << "].second: " << adjListEqqNodes[i].second << std::endl;
+    }
 }
 
 double Decoder::calculateGFunction(int d, int l){
@@ -196,11 +208,12 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
         std::cout << std::endl;
     }*/
     //graph.printGraph();
+
     double LLR_g;
     bool codeword = false;
     std::vector<int> decodedBits(graph.equalityNodesSize);
-    double sum_1 = 0;
-    /* Vector that contains the sum of the messages that enter in the equality nodes*/
+    double sum_1 = 0.0;
+    // Vector that contains the sum of the messages that enter in the equality nodes for the marginalization
     std::vector<double> vectorEqualityNodes(graph.equalityNodesSize);
    
 
@@ -210,6 +223,8 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
             double den_1;
             double num_2;
             double den_2;
+            double num_3;
+            double den_3;
             double num;
             double den;
             int count = 0;
@@ -220,10 +235,10 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
             // Calculate the LLR for the conform nodes
             for(int i = 0; i < received_word.size(); i++){
                 addition_counter++;
-                //Select one of the possibile combinations of vector_map
+                // Select one of the possibile combinations of vector_map
                 for(int j = 0; j < vector_map_0.size(); j++){
                     addition_counter++;
-                    //Select one of the possibile combinations of exponent_map
+                    // Select one of the possibile combinations of exponent_map
                     std::vector<double> LLRwNodes = calculateLLRwNodes(output_link[j], i);
                     /*if(counter > 0){
                         for(int i = 0; i < LLRwNodes.size(); i++){
@@ -252,23 +267,24 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
                         addition_counter++; 
                     }
                     
-                    num_2 = exp(num_2);
+                    num_3 = den_3 = 0.0;
+                    num_3 = exp(num_2);
                     exp_counter++;
-                    den_2 = exp(den_2);
+                    den_3 = exp(den_2);
                     exp_counter++;
                     
                     if(out != output_link[j]){
                         temp_vector.push_back(std::make_pair(num, den));
                         out = output_link[j];
-                        num = num_1 * num_2;
+                        num = num_1 * num_3;
                         multiplication_counter++;
-                        den = den_1 * den_2;
+                        den = den_1 * den_3;
                         multiplication_counter++;
                     } else{
-                        num += num_1 * num_2;
+                        num += num_1 * num_3;
                         addition_counter++;
                         multiplication_counter++;
-                        den += den_1 * den_2;
+                        den += den_1 * den_3;
                         addition_counter++;
                         multiplication_counter++;
                     }
@@ -301,7 +317,7 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
             for(int j = 0; j < graph.adjListEqualityNodes[i].size(); ++j)
             {   
                 addition_counter++;
-                double sum = 0;
+                double sum = 0.0;
                 /*Get the destination of the current link, so the check node*/
                 int dest = graph.adjListEqualityNodes[i][j].first;
                 /*Sum of the messages coming from the w-nodes to the equality node*/
@@ -356,8 +372,7 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
                 /*Sum of the messages coming from the equality nodes except the destination*/
                 double sum_of_LLR = 0.0;
                 double product_sign = 1.0;
-                for(int j_first = 0; j_first < graph.adjListCheckNodes[i].size(); j_first++)
-                {
+                for(int j_first = 0; j_first < graph.adjListCheckNodes[i].size(); j_first++){
                     addition_counter++;
                     comparison_counter++;
                     if(j_first == j)
@@ -395,7 +410,7 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
                 addition_counter++;
                 double sum_5 = adjListWNodes[i/bit_per_symbol][i%bit_per_symbol].second;
                 division_counter = division_counter + 2;
-                double sum_4 = 0;
+                double sum_4 = 0.0;
                 for(int j = 0; j < graph.adjListEqualityNodes[i].size(); j++){
                     addition_counter++;
                     /*Get the destination, so the check node*/
@@ -407,6 +422,7 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
                         if(graph.adjListCheckNodes[dest][j_first].first == i){
                             sum_4 += graph.adjListCheckNodes[dest][j_first].second;
                             addition_counter++;
+                            break;
                         }
                     }        
                 }
@@ -437,6 +453,10 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
                 vectorEqualityNodes[i] = sum_3;
             }
         }
+
+        /*for(int z = 0; z < vectorEqualityNodes.size(); z++){
+            std::cout << "vectorEqualityNodes[" << z << "]: " << vectorEqualityNodes[z] << std::endl;
+        }*/
         /*Marginalization*/
         for(int i = 0; i < vectorEqualityNodes.size(); i++){
             addition_counter++;
@@ -454,10 +474,13 @@ std::pair<std::vector<int>, int> Decoder::BICMDecodingCycle(int fast_decoding_cy
         counter++;
         //std::cout << "counter: " << counter << std::endl;
         comparison_counter++;
-        if(counter == 20){
+        if(counter == 1){
             break;
         }
     }
+    graph.printGraph();
+    printGraph();
+    std::cout << adjListEqqNodes.size() << std::endl;
 
     // Part for the complexity of the decoding
     // The cost for all the operations
