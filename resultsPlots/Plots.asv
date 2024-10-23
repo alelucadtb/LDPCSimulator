@@ -1,5 +1,5 @@
-dati1 = readmatrix("fCLDPC8PAMR56.txt");
-dati2 = readmatrix("sCLDPC8PAMR56.txt");
+dati1 = readmatrix("fCLDPC8PAMR.txt");
+dati2 = readmatrix("slowCycleLDPC8PAM.txt");
 
 fastBER = dati1(:, 1);  % Prima colonna (valori X)
 fastSNR = dati1(:, 2);  % Seconda colonna (valori Y)

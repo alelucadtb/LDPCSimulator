@@ -17,6 +17,7 @@ public:
 private:
     double mean;
     double variance;
+    double stddev;
     int numberOfSamples;
     double sigma;
     bool isSNRMode;

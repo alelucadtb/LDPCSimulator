@@ -33,7 +33,11 @@ class Channel {
     private:
 
     AWGN awgn;
+    AWGN awgnGood;
+    AWGN awgnBad;
     int actualState = 0;
+
+    double get_random(double min, double max);
 
 };
 

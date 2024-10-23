@@ -19,29 +19,29 @@ std::vector<int> generateRandomVector(int len) {
 int main() {
     std::vector<double> iValue;
     // Associate for different value of the variance a different number of repetion of the cycle
-    //std::vector<std::pair<double, int> > numberOfCodeword = {{0.1, 10000}, {0.2, 10000}, {0.3, 10000}, {0.4, 1000}, {0.5, 1000}, {0.6, 1000}, {0.7, 1000}, {0.8, 1000}, {1.0, 100}, {1.1, 100}, {1.2, 10}, {1.3, 10}, {1.4, 10}, {1.5, 10}, {2, 10}, {2.5, 10}, {3, 10}, {3.5, 10}};
+    std::vector<std::pair<double, int> > numberOfCodeword = {{0.1, 10000}, {0.2, 10000}, {0.3, 10000}, {0.4, 10000}, {0.5, 10000}, {0.6, 1000}, {0.7, 1000}, {0.8, 1000}, {1.0, 100}, {1.1, 100}, {1.2, 10}, {1.3, 10}, {1.4, 10}, {1.5, 10}, {2, 10}, {2.5, 10}, {3, 10}, {3.5, 10}};
     //std::vector<std::pair<double, int> > numberOfCodeword = {{0.3, 100}, {0.4, 100}, {0.5, 100}, {0.51, 100}, {0.53, 100}, {0.54, 100}, {0.56, 100}, {0.58, 100}, {0.6, 100}, {0.7, 100}, {0.8, 100}};
-    //std::vector<std::pair<double, int> > numberOfCodeword = {{0.7, 100}, {0.9, 100}, {1, 100}, {1.5, 100}, {2, 100}, {2.5, 100}, {3, 100}, {3.5, 100}};
-    std::vector<std::pair<double, int> > numberOfCodeword = {{2, 1}};
+    //std::vector<std::pair<double, int> > numberOfCodeword = {{0.2, 100}, {0.5, 100}, {0.7, 100}, {1, 100}, {2, 100}, {2.5, 100}, {3, 100}};
+    //std::vector<std::pair<double, int> > numberOfCodeword = {{2, 1}};
 
     for(int j = 0; j < numberOfCodeword.size(); j++){
         // Temporary value for the BER and SNR
         double BERtmp = 0.0;
         double SNRtmp = 0.0;
-        int totalCost = 0.0;
+        long totalCost = 0.0;
         int counter = 0;
         for(int z = 0; z < numberOfCodeword[j].second; z++){
-            double R = 1.0/2.0;
+            double R = 2.0/3.0;
             int count = 0;
             /*Create the parity check matrix*/
-            ParityCheckMatrix pcm = ParityCheckMatrix(648, 27, R, "n648_Z27_R12.txt");
+            ParityCheckMatrix pcm = ParityCheckMatrix(648, 27, R, "n648_Z27_R23.txt");
             pcm.writeBinaryMatrix("binary_matrix.txt");
 
             Encoder encoder = Encoder(pcm);
             std::vector<std::vector<int> > G = encoder.getGeneratingMatrix();
             
             /*Generate a random data word*/
-            Word data_word = Word(generateRandomVector(324));
+            Word data_word = Word(generateRandomVector(432));
 
             /*Encode the data word*/
             Word encoded_word = encoder.encode(data_word);

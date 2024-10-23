@@ -50,7 +50,6 @@ class Decoder{
         */
         void generateGraph();
         // Print the graph
-        void printGraphBICM();
         /*Vector of vectors of pair vectors that represents the message sent from the w to the equality nodes*/   
         std::vector<std::vector<std::pair<int, double>>> adjListWNodes;
         /*Vector of vectors of pair vectors that represents the message sent from the equality nodes to the w nodes*/

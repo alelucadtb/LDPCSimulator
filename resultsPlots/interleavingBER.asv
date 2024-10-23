@@ -11,13 +11,12 @@ BER3 = dati3(:, 1);
 
 % Creare il grafico lineare
 figure;
-loglog(Depth1, BER1, '-r', 'LineWidth', 2);
+plot(Depth1, BER1, '-r', 'LineWidth', 2);
 hold on
-loglog(Depth2, BER2, '--b', 'LineWidth', 2);
-hold on
-loglog(Depth3, BER3, '--g', 'LineWidth', 2);
+plot(Depth2, BER2, '-b', 'LineWidth', 2);
+loglog(Depth3, BER3, '-y', 'LineWidth', 2);
 xlabel('Interleaving Depth', 'FontName', 'Times New Roman');
 ylabel('BER', 'FontName', 'Times New Roman');
-title('Different interleaving approach with 8-PAM', 'FontName', 'Times New Roman','FontSize', 16);
-legend('Interleaving\_v1', 'Interleaving\_v2', 'Interleaving\_v3');
+title('Slow vs Fast decoding cycle LDPC code with 8-PAM', 'FontName', 'Times New Roman','FontSize', 16);
+legend('8-PAM', '16-PAM');
 grid on;  % Aggiungere la griglia
